@@ -1,17 +1,18 @@
 package by.bsuir.skillhub.controllers;
 
 import by.bsuir.skillhub.dto.UserDto;
-import by.bsuir.skillhub.entity.Users;
 import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
-//@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/user")
+@PreAuthorize("hasAnyAuthority('user','admin','teacher')")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -20,15 +21,7 @@ public class UserController {
 
     //Находим пользователя по ID
     @GetMapping("/get-user/{userId}")
-    public UserDto getUser(@PathVariable Long userId) throws Exception {
-        System.out.println(userId);
+    public ResponseEntity<UserDto> getUser(@PathVariable Long userId) throws Exception {
         return userService.getUser(userId);
     }
-
-//    //Находим пользователя по ID
-//    @GetMapping("/get-user/{userId}")
-//    public Users getUser(@PathVariable Long userId) {
-//        System.out.println(userId);
-//        return usersRepository.findById(userId).get();
-//    }
 }
