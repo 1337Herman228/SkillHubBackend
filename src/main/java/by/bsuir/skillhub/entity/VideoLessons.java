@@ -21,6 +21,6 @@ public class VideoLessons {
     @Column(length = 300, nullable = false)
     private String videoUrl;
 
-    @Column(nullable = false)
-    private Integer videoDuration;
+//    @Column(nullable = false)
+//    private Integer videoDuration;
 }

@@ -27,6 +27,10 @@ public class Lessons {
     private Short diamondReward;
     private Integer lessonOrder;
 
+    //У тестовых уроков не будет длительности
+    @Column(nullable = true)
+    private Integer duration;
+
     public enum LessonType {
         VIDEO, TEXT, TEST
     }
