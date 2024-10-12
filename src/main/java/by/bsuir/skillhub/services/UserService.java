@@ -16,19 +16,19 @@ public class UserService {
 
     private final UsersRepository usersRepository;
 
-    public UserDto getUser(Long userId) throws Exception {
+    public ResponseEntity<UserDto> getUser(Long userId) throws Exception {
         try {
             Optional<Users> userOptional = usersRepository.findById(userId);
 
-//            if (userOptional.isPresent()) {
+            if (userOptional.isPresent()) {
                 Users user = userOptional.get();
                 UserDto userDto = convertToDto(user); // Метод для преобразования Users в UserDto
-                return userDto;
-//            } else {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-//            }
+                return ResponseEntity.status(HttpStatus.OK).body(userDto);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
         } catch (Exception e) {
-            throw new Exception("123");
+            throw new Exception("Can't get user", e);
         }
     }
 
