@@ -21,6 +21,6 @@ public class TextLessons {
     @Column(length = 3000, nullable = false)
     private String lessonBody; //HTML
 
-    @Column(nullable = false)
-    private Integer duration;
+//    @Column(nullable = false)
+//    private Integer duration;
 }

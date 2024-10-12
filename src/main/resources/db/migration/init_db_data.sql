@@ -25,11 +25,11 @@ VALUES ('alice.smith@example.com', 'REGKEY123'),
 -- Заполнение таблицы courses
 INSERT INTO courses (course_id, author_id, course_img, course_name, topic, skill_level, short_description,
                      long_description, last_update)
-VALUES (10000, 10001, 'course1.png', 'Introduction to Programming', 'Programming', 'START',
+VALUES (10000, 10001, 'course-1.png', 'Introduction to Programming', 'Programming', 'START',
         'A beginner-friendly course.', '<p>This course covers the basics of programming.</p>', CURRENT_TIMESTAMP),
-       (10001, 10001, 'course2.png', 'Advanced Java', 'Java', 'PRO', 'An advanced course for experienced programmers.',
+       (10001, 10001, 'course-1.png', 'Advanced Java', 'Java', 'PRO', 'An advanced course for experienced programmers.',
         '<p>This course dives deep into Java.</p>', CURRENT_TIMESTAMP),
-       (10002, 10000, 'course3.png', 'Teaching Techniques', 'Education', 'NORMAL', 'Effective teaching strategies.',
+       (10002, 10000, 'course-1.png', 'Teaching Techniques', 'Education', 'NORMAL', 'Effective teaching strategies.',
         '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы chapters
@@ -115,16 +115,18 @@ VALUES (10000, 10000, 10002, 5, 'Great course for beginners!', CURRENT_TIMESTAMP
        (10002, 10002, 10000, 5, 'Excellent teaching techniques!', CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы user_progress
-INSERT INTO user_progress (progress_id, user_id, lesson_id, completed)
-VALUES (10000, 10002, 10000, true),
-       (10001, 10001, 10001, false),
-       (10002, 10000, 10002, true);
+INSERT INTO user_progress (progress_id, user_id, lesson_id, course_id)
+VALUES (10000, 10002, 10000, 10000),
+       (10001, 10001, 10001, 10000),
+       (10002, 10000, 10002, 10001);
 
 -- Заполнение таблицы course_access
 INSERT INTO course_access (access_id, user_id, course_id, request_date, granted_date, status)
-VALUES (10000, 10002, 10000, CURRENT_TIMESTAMP, NULL, 'PENDING'),
+VALUES (10000, 10002, 10000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
        (10001, 10001, 10001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
-       (10002, 10000, 10002, CURRENT_TIMESTAMP, NULL, 'PENDING');
+       (10002, 10000, 10002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
+       (10003, 10002, 10001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'PENDING'),
+       (10004, 10002, 10002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED');
 
 -- Заполнение таблицы become_teacher
 INSERT INTO become_teacher (become_teacher_id, user_id, request_date, granted_date, status)

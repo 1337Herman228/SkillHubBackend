@@ -24,7 +24,7 @@ public class Reviews {
     @JoinColumn(name = "user_id",nullable = false)
     private Users user;
 
-    private Integer rating;
+    private Integer rating; //1-5
 
     @Column(length = 500, nullable = false)
     private String reviewText; //Not HTML
