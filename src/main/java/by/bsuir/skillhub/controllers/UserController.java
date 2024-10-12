@@ -2,9 +2,7 @@ package by.bsuir.skillhub.controllers;
 
 import by.bsuir.skillhub.dto.ContinueCourseDto;
 import by.bsuir.skillhub.dto.UserDto;
-import by.bsuir.skillhub.entity.Courses;
 import by.bsuir.skillhub.entity.UserProgress;
-import by.bsuir.skillhub.entity.Users;
 import by.bsuir.skillhub.repo.UserProgressRepository;
 import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.services.CoursesService;
@@ -17,10 +15,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 
-//@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
 @RequestMapping("/user")
-@PreAuthorize("hasAnyAuthority('user', 'admin','teacher')")
+@PreAuthorize("hasAnyAuthority('user','admin','teacher')")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -49,4 +47,5 @@ public class UserController {
 //    public List<Courses> getUserProgress(@PathVariable Long userId) throws Exception {
 //        return userProgressRepository.findByUser(usersRepository.findById(userId).get());
 //    }
+
 }
