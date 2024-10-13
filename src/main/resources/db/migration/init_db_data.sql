@@ -26,10 +26,14 @@ VALUES ('alice.smith@example.com', 'REGKEY123'),
 INSERT INTO courses (course_id, author_id, course_img, course_name, topic, skill_level, short_description,
                      long_description, last_update)
 VALUES (10000, 10001, 'course-1.png', 'Introduction to Programming', 'Programming', 'START',
-        'A beginner-friendly course.', '<p>This course covers the basics of programming.</p>', CURRENT_TIMESTAMP),
-       (10001, 10001, 'course-1.png', 'Advanced Java', 'Java', 'PRO', 'An advanced course for experienced programmers.',
+        'A beginner-friendly course. An advanced course for experienced programmers.', '<p>This course covers the basics of programming. This course covers the basics of programming</p>', CURRENT_TIMESTAMP),
+       (10001, 10001, 'course-1.png', 'Advanced Java', 'Java', 'PRO', 'An advanced course for experienced programmers. An advanced course for experienced programmers.',
         '<p>This course dives deep into Java.</p>', CURRENT_TIMESTAMP),
-       (10002, 10000, 'course-1.png', 'Teaching Techniques', 'Education', 'NORMAL', 'Effective teaching strategies.',
+       (10002, 10000, 'course-1.png', 'Teaching Techniques', 'Education', 'NORMAL', 'Effective teaching strategies. An advanced course for experienced programmers.',
+        '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP),
+       (10003, 10000, 'course-1.png', 'Course-10003', 'Education', 'NORMAL', 'Effective teaching strategies. An advanced course for experienced programmers.',
+        '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP),
+       (10004, 10000, 'course-1.png', 'Course-10004', 'Education', 'NORMAL', 'Effective teaching strategies. An advanced course for experienced programmers.',
         '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы chapters
@@ -39,10 +43,10 @@ VALUES (10000, 10000, 'Introduction', 1),
        (10002, 10001, 'Advanced Topics', 1);
 
 -- Заполнение таблицы lessons
-INSERT INTO lessons (lesson_id, chapter_id, lesson_type, lesson_title, diamond_reward, lesson_order)
-VALUES (10000, 10000, 'VIDEO', 'What is Programming?', 5, 1),
-       (10001, 10000, 'TEXT', 'Getting Started', 10, 2),
-       (10002, 10001, 'TEST', 'Basic Concepts Quiz', 15, 1);
+INSERT INTO lessons (lesson_id, chapter_id, lesson_type, lesson_title, diamond_reward, lesson_order, duration)
+VALUES (10000, 10000, 'VIDEO', 'What is Programming?', 5, 1, 120),
+       (10001, 10000, 'TEXT', 'Getting Started', 10, 2, 35),
+       (10002, 10001, 'TEST', 'Basic Concepts Quiz', 15, 1, null);
 
 -- Заполнение таблицы questions
 INSERT INTO questions (question_id, user_id, lesson_id, title, body, created_at, updated_at)
@@ -60,15 +64,15 @@ VALUES (10000, 10000, 10001, '<p>A variable is a storage location for data.</p>'
        (10002, 10002, 10002, '<p>Establish clear rules and expectations.</p>', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы video_lessons
-INSERT INTO video_lessons (lesson_id, video_url, video_duration, video_lesson_id)
-VALUES (10000, 'http://example.com/video1', 12, 10000),
-       (10001, 'http://example.com/video2', 20, 10001),
-       (10002, 'http://example.com/video3', 5, 10002);
+INSERT INTO video_lessons (lesson_id, video_url, video_lesson_id)
+VALUES (10000, 'http://example.com/video1', 10000),
+       (10001, 'http://example.com/video2', 10001),
+       (10002, 'http://example.com/video3', 10002);
 
 -- Заполнение таблицы text_lessons
-INSERT INTO text_lessons (lesson_id, lesson_body, duration)
-VALUES (10001, '<p>This lesson introduces programming basics.</p>', 30),
-       (10002, '<p>Test your knowledge with this quiz.</p>', 0);
+INSERT INTO text_lessons (lesson_id, lesson_body)
+VALUES (10001, '<p>This lesson introduces programming basics.</p>'),
+       (10002, '<p>Test your knowledge with this quiz.</p>');
 -- Test lessons do not have a duration
 
 -- Заполнение таблицы tests
@@ -112,7 +116,11 @@ VALUES (10000, 10000, 'Example Resource', 'http://example.com/resource1'),
 INSERT INTO reviews (review_id, course_id, user_id, rating, review_text, created_at)
 VALUES (10000, 10000, 10002, 5, 'Great course for beginners!', CURRENT_TIMESTAMP),
        (10001, 10001, 10001, 4, 'Very informative and well-structured.', CURRENT_TIMESTAMP),
-       (10002, 10002, 10000, 5, 'Excellent teaching techniques!', CURRENT_TIMESTAMP);
+       (10002, 10002, 10000, 5, 'Excellent teaching techniques!', CURRENT_TIMESTAMP),
+       (10003, 10000, 10001, 4, 'Very informative and well-structured.', CURRENT_TIMESTAMP),
+       (10004, 10000, 10000, 5, 'Excellent teaching techniques!', CURRENT_TIMESTAMP),
+       (10005, 10001, 10002, 4, 'Very informative and well-structured.', CURRENT_TIMESTAMP),
+       (10006, 10001, 10000, 5, 'Excellent teaching techniques!', CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы user_progress
 INSERT INTO user_progress (progress_id, user_id, lesson_id, course_id)
@@ -126,7 +134,7 @@ VALUES (10000, 10002, 10000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
        (10001, 10001, 10001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
        (10002, 10000, 10002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
        (10003, 10002, 10001, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'PENDING'),
-       (10004, 10002, 10002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED');
+       (10004, 10002, 10002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'REJECTED');
 
 -- Заполнение таблицы become_teacher
 INSERT INTO become_teacher (become_teacher_id, user_id, request_date, granted_date, status)
