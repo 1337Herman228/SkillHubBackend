@@ -61,4 +61,10 @@ public class UserController {
         return coursesService.requestAccess(requestBody);
     }
 
+    @PutMapping("/edit-profile-info")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus editProfileInfo(@RequestBody EditPersonDto requestBody) throws Exception {
+        return userService.editUserInfo(requestBody);
+    }
+
 }

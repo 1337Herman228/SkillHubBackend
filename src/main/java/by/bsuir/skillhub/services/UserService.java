@@ -1,7 +1,10 @@
 package by.bsuir.skillhub.services;
 
+import by.bsuir.skillhub.dto.EditPersonDto;
 import by.bsuir.skillhub.dto.UserDto;
+import by.bsuir.skillhub.entity.Persons;
 import by.bsuir.skillhub.entity.Users;
+import by.bsuir.skillhub.repo.PersonsRepository;
 import by.bsuir.skillhub.repo.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UsersRepository usersRepository;
+    private final PersonsRepository personsRepository;
 
     public ResponseEntity<UserDto> getUser(Long userId) throws Exception {
         try {
@@ -29,6 +33,24 @@ public class UserService {
             }
         } catch (Exception e) {
             throw new Exception("Can't get user", e);
+        }
+    }
+
+    public HttpStatus editUserInfo (EditPersonDto requestBody) throws Exception {
+        try{
+            Users user = usersRepository.findById(requestBody.getUserId()).orElse(null);
+            assert user != null;
+            Persons person = personsRepository.findById(user.getPerson().getPersonId()).orElse(null);
+            user.setLogin(requestBody.getLogin());
+            assert person != null;
+            person.setName(requestBody.getName());
+            person.setSurname(requestBody.getSurname());
+            person.setEmail(requestBody.getEmail());
+            usersRepository.save(user);
+            personsRepository.save(person);
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            throw new Exception("Can't edit user info", e);
         }
     }
 
