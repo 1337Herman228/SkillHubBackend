@@ -6,9 +6,9 @@ VALUES (10000, 'admin'),
 
 -- Заполнение таблицы persons
 INSERT INTO persons (person_id, name, surname, email, avatar_img)
-VALUES (10000, 'Alice', 'Smith', 'alice.smith@example.com', 'avatar1.png'),
-       (10001, 'Bob', 'Johnson', 'bob.johnson@example.com', 'avatar2.png'),
-       (10002, 'Charlie', 'Williams', 'charlie.williams@example.com', 'avatar3.png');
+VALUES (10000, 'Alice', 'Smith', 'alice.smith@example.com', null),
+       (10001, 'Bob', 'Johnson', 'bob.johnson@example.com', null),
+       (10002, 'Charlie', 'Williams', 'charlie.williams@example.com', null);
 
 -- Заполнение таблицы users
 INSERT INTO users (user_id, person_id, role_id, login, password, diamonds)
