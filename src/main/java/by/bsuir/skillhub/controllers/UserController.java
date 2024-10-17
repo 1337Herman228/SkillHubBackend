@@ -67,4 +67,22 @@ public class UserController {
         return userService.editUserInfo(requestBody);
     }
 
+    @PutMapping("/edit-profile-photo")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus editProfilePhoto(@RequestBody EditPhotoDto requestBody) throws Exception {
+        return userService.editUserPhoto(requestBody);
+    }
+
+    @PostMapping("/add-teacher-request")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus addTeacherRequest(@RequestBody AddTeacherRequest requestBody) throws Exception {
+        return userService.addBecomeTeacherRecord(requestBody);
+    }
+
+    @PutMapping("/change-user-password")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus changeUserPassword(@RequestBody ChangeUserPasswordDto requestBody) throws Exception {
+        return userService.changeUserPassword(requestBody);
+    }
+
 }

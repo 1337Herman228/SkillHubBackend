@@ -19,6 +19,15 @@ public class BecomeTeacher {
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
+    @Column(length = 100, nullable = false)
+    private String courseSphere;
+
+    @Column(length = 200, nullable = false)
+    private String courseName;
+
+    @Column(length = 500, nullable = false)
+    private String courseDescription;
+
     private Timestamp requestDate;
     private Timestamp grantedDate;
 

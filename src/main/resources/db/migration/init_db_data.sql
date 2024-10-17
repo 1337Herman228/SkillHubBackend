@@ -8,7 +8,7 @@ VALUES (10000, 'admin'),
 INSERT INTO persons (person_id, name, surname, email, avatar_img)
 VALUES (10000, 'Alice', 'Smith', 'alice.smith@example.com', null),
        (10001, 'Bob', 'Johnson', 'bob.johnson@example.com', null),
-       (10002, 'Charlie', 'Williams', 'charlie.williams@example.com', null);
+       (10002, 'Charlie', 'Williams', 'charlie.williams@example.com', 'avatar-10002t=1729100272856.png');
 
 -- Заполнение таблицы users
 INSERT INTO users (user_id, person_id, role_id, login, password, diamonds)
@@ -26,14 +26,20 @@ VALUES ('alice.smith@example.com', 'REGKEY123'),
 INSERT INTO courses (course_id, author_id, course_img, course_name, topic, skill_level, short_description,
                      long_description, last_update)
 VALUES (10000, 10001, 'course-1.png', 'Introduction to Programming', 'Programming', 'START',
-        'A beginner-friendly course. An advanced course for experienced programmers.', '<p>This course covers the basics of programming. This course covers the basics of programming</p>', CURRENT_TIMESTAMP),
-       (10001, 10001, 'course-1.png', 'Advanced Java', 'Java', 'PRO', 'An advanced course for experienced programmers. An advanced course for experienced programmers.',
+        'A beginner-friendly course. An advanced course for experienced programmers.',
+        '<p>This course covers the basics of programming. This course covers the basics of programming</p>',
+        CURRENT_TIMESTAMP),
+       (10001, 10001, 'course-1.png', 'Advanced Java', 'Java', 'PRO',
+        'An advanced course for experienced programmers. An advanced course for experienced programmers.',
         '<p>This course dives deep into Java.</p>', CURRENT_TIMESTAMP),
-       (10002, 10000, 'course-1.png', 'Teaching Techniques', 'Education', 'NORMAL', 'Effective teaching strategies. An advanced course for experienced programmers.',
+       (10002, 10000, 'course-1.png', 'Teaching Techniques', 'Education', 'NORMAL',
+        'Effective teaching strategies. An advanced course for experienced programmers.',
         '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP),
-       (10003, 10000, 'course-1.png', 'Course-10003', 'Education', 'NORMAL', 'Effective teaching strategies. An advanced course for experienced programmers.',
+       (10003, 10000, 'course-1.png', 'Course-10003', 'Education', 'NORMAL',
+        'Effective teaching strategies. An advanced course for experienced programmers.',
         '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP),
-       (10004, 10000, 'course-1.png', 'Course-10004', 'Education', 'NORMAL', 'Effective teaching strategies. An advanced course for experienced programmers.',
+       (10004, 10000, 'course-1.png', 'Course-10004', 'Education', 'NORMAL',
+        'Effective teaching strategies. An advanced course for experienced programmers.',
         '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы chapters
@@ -137,9 +143,9 @@ VALUES (10000, 10002, 10000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED'),
        (10004, 10002, 10002, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'REJECTED');
 
 -- Заполнение таблицы become_teacher
-INSERT INTO become_teacher (become_teacher_id, user_id, request_date, granted_date, status)
-VALUES (10000, 10001, CURRENT_TIMESTAMP, NULL, 'PENDING'),
-       (10002, 10000, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'APPROVED');
+INSERT INTO become_teacher (become_teacher_id, user_id, request_date, granted_date, status, course_name, course_sphere,
+                            course_description)
+VALUES (10001, 10000, CURRENT_TIMESTAMP, null, 'PENDING', 'Course TEST', 'Frontend', 'Description...');
 
 -- Заполнение таблицы user_notes
 INSERT INTO user_notes (note_id, user_id, lesson_id, note_text, created_at)
