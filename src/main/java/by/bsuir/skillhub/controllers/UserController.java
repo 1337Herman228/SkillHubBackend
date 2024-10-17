@@ -85,4 +85,17 @@ public class UserController {
         return userService.changeUserPassword(requestBody);
     }
 
+    @GetMapping("/get-user-interest-courses/{userId}")
+    public List<UserInterestCoursesDto> getUserInterestCourses(@PathVariable Long userId) throws Exception {
+        return coursesService.findUserInterestCourses(usersRepository.findById(userId).get());
+    }
+
+    @PostMapping("/find-user-interest-courses-by-name")
+    public List<UserInterestCoursesDto> findUserInterestCoursesByName(@RequestBody FindCourseByNameForUserDto requestBody) throws Exception {
+        return coursesService.findUserInterestCoursesByName(
+                usersRepository.findById(requestBody.getUserId()).get(),
+                requestBody.getCourseName());
+    }
+
+
 }
