@@ -3,6 +3,7 @@ package by.bsuir.skillhub.services;
 import by.bsuir.skillhub.dto.AllCoursesDto;
 import by.bsuir.skillhub.dto.ContinueCourseDto;
 import by.bsuir.skillhub.dto.RequestAccessDto;
+import by.bsuir.skillhub.dto.UserInterestCoursesDto;
 import by.bsuir.skillhub.entity.*;
 import by.bsuir.skillhub.repo.*;
 import lombok.RequiredArgsConstructor;
@@ -92,27 +93,17 @@ public class CoursesService {
     }
 
     public List<AllCoursesDto> makeAllCoursesDtoList (List<Courses> courses, Users user) {
+
         List<AllCoursesDto> allCourseDtos = new ArrayList<>();
         for (Courses course : courses) {
-            int sumDuration = 0;
+
+            //Находим общую длительность уроков
             List<Lessons> allCourseLessons = getAllCourseLessons(course);
-            for (Lessons lesson : allCourseLessons) {
-                if (lesson.getDuration() == null) {
-                    sumDuration += 0;
-                } else {
-                    sumDuration += lesson.getDuration();
+            int sumDuration = countAllLessonsDuration(allCourseLessons);
 
-                }
-            }
-
-            Integer sumRating = 0;
+            //Находим рейтинг курса
             List<Reviews> courseReviews = reviewsRepository.findByCourse(course);
-            for (Reviews review : courseReviews) {
-                sumRating += review.getRating();
-            }
-
-            float rating = (float) sumRating / courseReviews.size();
-            if (Float.isNaN(rating)) rating = 0f;
+            float rating = countAverageCourseRating(courseReviews);
 
             Optional<CourseAccess> courseAccess = courseAccessRepository.findByUserAndCourse(user, course);
 
@@ -122,6 +113,8 @@ public class CoursesService {
             allCoursesDto.setAllLessonsCount(allCourseLessons.size());
             allCoursesDto.setRating(rating);
             allCoursesDto.setReviewsCount(courseReviews.size());
+
+            //Узнаем имеет ли пользователь доступ к курсу
             if (courseAccess.isPresent()) {
                 allCoursesDto.setStatus(String.valueOf(courseAccess.get().getStatus()));
             } else {
@@ -131,6 +124,64 @@ public class CoursesService {
 
         }
         return allCourseDtos;
+    }
+
+    public List<UserInterestCoursesDto> findUserInterestCourses(Users user) {
+        //Находим курсы, к которым пользователь имеет или запрашивал доступ
+        List<CourseAccess> courseAccessList = courseAccessRepository.findByUser(user);
+        List<Courses> courses = new ArrayList<>();
+        for(CourseAccess courseAccess : courseAccessList) {
+            courses.add(courseAccess.getCourse());
+        }
+        return makeUserInterestCoursesDtoList(courses, user);
+    }
+
+    public List<UserInterestCoursesDto> findUserInterestCoursesByName(Users user, String courseName) {
+        //Находим курсы, к которым пользователь имеет или запрашивал доступ
+        List<CourseAccess> courseAccessList = courseAccessRepository.findByUser(user);
+        List<Courses> courses = new ArrayList<>();
+        for(CourseAccess courseAccess : courseAccessList) {
+            //Проверяем совпадает ли имя курса с искомым
+            if(courseAccess.getCourse().getCourseName().toLowerCase().contains(courseName.toLowerCase())) {
+                courses.add(courseAccess.getCourse());
+            }
+        }
+        return makeUserInterestCoursesDtoList(courses, user);
+    }
+
+    public List<UserInterestCoursesDto> makeUserInterestCoursesDtoList (List<Courses> courses, Users user) {
+
+        List<UserInterestCoursesDto> userInterestCoursesDtos = new ArrayList<>();
+        for (Courses course : courses) {
+
+            //Находим общую длительность уроков
+            List<Lessons> allCourseLessons = getAllCourseLessons(course);
+            int sumDuration = countAllLessonsDuration(allCourseLessons);
+
+            //Находим рейтинг курса
+            List<Reviews> courseReviews = reviewsRepository.findByCourse(course);
+            float rating = countAverageCourseRating(courseReviews);
+
+            Optional<CourseAccess> courseAccess = courseAccessRepository.findByUserAndCourse(user, course);
+
+            UserInterestCoursesDto userInterestCoursesDto = new UserInterestCoursesDto();
+            userInterestCoursesDto.setCourse(course);
+            userInterestCoursesDto.setDuration(sumDuration);
+            userInterestCoursesDto.setAllLessonsCount(allCourseLessons.size());
+            userInterestCoursesDto.setRating(rating);
+
+            //Кол-во оценок курса
+            userInterestCoursesDto.setReviewsCount(courseReviews.size());
+
+            userInterestCoursesDto.setStatus(courseAccess.get().getStatus());
+            userInterestCoursesDto.setProgressInPercents(calculateUserProgressInPercents(user, course));
+            userInterestCoursesDto.setCompletedLessonsCount(getUserFinishedLessons(user, course).size());
+
+
+            userInterestCoursesDtos.add(userInterestCoursesDto);
+
+        }
+        return userInterestCoursesDtos;
     }
 
     public HttpStatus requestAccess(RequestAccessDto requestAccessDto) throws Exception {
@@ -166,5 +217,32 @@ public class CoursesService {
             throw new Exception("Can't add access request", e);
         }
     }
+
+    public int countAllLessonsDuration (List<Lessons> lessons){
+        int sumDuration = 0;
+        for (Lessons lesson : lessons) {
+            if (lesson.getDuration() == null) {
+                sumDuration += 0;
+            } else {
+                sumDuration += lesson.getDuration();
+            }
+        }
+        return sumDuration;
+    }
+
+    public float countAverageCourseRating(List<Reviews> courseReviews){
+        Integer sumRating = 0;
+        for (Reviews review : courseReviews) {
+            sumRating += review.getRating();
+        }
+
+        //Вычисляем средний рейтинг
+        float rating = (float) sumRating / courseReviews.size();
+        if (Float.isNaN(rating)) rating = 0f;
+
+        return rating;
+    }
+
+
 
 }

@@ -1,6 +1,5 @@
 package by.bsuir.skillhub.dto;
 
-import by.bsuir.skillhub.entity.CourseAccess;
 import by.bsuir.skillhub.entity.Courses;
 import lombok.Data;
 
