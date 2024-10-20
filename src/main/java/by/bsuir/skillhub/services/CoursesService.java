@@ -1,9 +1,6 @@
 package by.bsuir.skillhub.services;
 
-import by.bsuir.skillhub.dto.AllCoursesDto;
-import by.bsuir.skillhub.dto.ContinueCourseDto;
-import by.bsuir.skillhub.dto.RequestAccessDto;
-import by.bsuir.skillhub.dto.UserInterestCoursesDto;
+import by.bsuir.skillhub.dto.*;
 import by.bsuir.skillhub.entity.*;
 import by.bsuir.skillhub.repo.*;
 import lombok.RequiredArgsConstructor;
@@ -82,6 +79,16 @@ public class CoursesService {
         return continueCourseDtos;
     }
 
+    public List<AllCoursesDto> getTeacherCourses(Users user) {
+        List<Courses> teacherCourses = coursesRepository.findByAuthor(user);
+        return makeAllCoursesDtoList(teacherCourses, user);
+    }
+
+    public List<AllCoursesDto> findTeacherCoursesByName(Users user, String courseName) {
+        List<Courses> teacherCourses = coursesRepository.findByAuthorAndCourseNameContainingIgnoreCase(user,courseName);
+        return makeAllCoursesDtoList(teacherCourses, user);
+    }
+
     public List<AllCoursesDto> getAllCoursesForUser(Users user) {
         List<Courses> allCourses = coursesRepository.findAll();
         return makeAllCoursesDtoList(allCourses, user);
@@ -92,7 +99,7 @@ public class CoursesService {
         return makeAllCoursesDtoList(allCourses, user);
     }
 
-    public List<AllCoursesDto> makeAllCoursesDtoList (List<Courses> courses, Users user) {
+    public List<AllCoursesDto> makeAllCoursesDtoList(List<Courses> courses, Users user) {
 
         List<AllCoursesDto> allCourseDtos = new ArrayList<>();
         for (Courses course : courses) {
@@ -130,7 +137,7 @@ public class CoursesService {
         //Находим курсы, к которым пользователь имеет или запрашивал доступ
         List<CourseAccess> courseAccessList = courseAccessRepository.findByUser(user);
         List<Courses> courses = new ArrayList<>();
-        for(CourseAccess courseAccess : courseAccessList) {
+        for (CourseAccess courseAccess : courseAccessList) {
             courses.add(courseAccess.getCourse());
         }
         return makeUserInterestCoursesDtoList(courses, user);
@@ -140,16 +147,16 @@ public class CoursesService {
         //Находим курсы, к которым пользователь имеет или запрашивал доступ
         List<CourseAccess> courseAccessList = courseAccessRepository.findByUser(user);
         List<Courses> courses = new ArrayList<>();
-        for(CourseAccess courseAccess : courseAccessList) {
+        for (CourseAccess courseAccess : courseAccessList) {
             //Проверяем совпадает ли имя курса с искомым
-            if(courseAccess.getCourse().getCourseName().toLowerCase().contains(courseName.toLowerCase())) {
+            if (courseAccess.getCourse().getCourseName().toLowerCase().contains(courseName.toLowerCase())) {
                 courses.add(courseAccess.getCourse());
             }
         }
         return makeUserInterestCoursesDtoList(courses, user);
     }
 
-    public List<UserInterestCoursesDto> makeUserInterestCoursesDtoList (List<Courses> courses, Users user) {
+    public List<UserInterestCoursesDto> makeUserInterestCoursesDtoList(List<Courses> courses, Users user) {
 
         List<UserInterestCoursesDto> userInterestCoursesDtos = new ArrayList<>();
         for (Courses course : courses) {
@@ -193,15 +200,13 @@ public class CoursesService {
             );
             if (possibleCourseAccess.isPresent()) {
 
-                if(possibleCourseAccess.get().getStatus() == CourseAccess.AccessStatus.REJECTED)
-                {
+                if (possibleCourseAccess.get().getStatus() == CourseAccess.AccessStatus.REJECTED) {
                     possibleCourseAccess.get().setStatus(CourseAccess.AccessStatus.PENDING);
                     possibleCourseAccess.get().setRequestDate(new Timestamp(new Date().getTime()));
                     possibleCourseAccess.get().setGrantedDate(null);
                     courseAccessRepository.save(possibleCourseAccess.get());
                     return HttpStatus.OK;
-                }
-                else{
+                } else {
                     return HttpStatus.NOT_FOUND;
                 }
             } else {
@@ -218,7 +223,7 @@ public class CoursesService {
         }
     }
 
-    public int countAllLessonsDuration (List<Lessons> lessons){
+    public int countAllLessonsDuration(List<Lessons> lessons) {
         int sumDuration = 0;
         for (Lessons lesson : lessons) {
             if (lesson.getDuration() == null) {
@@ -230,7 +235,7 @@ public class CoursesService {
         return sumDuration;
     }
 
-    public float countAverageCourseRating(List<Reviews> courseReviews){
+    public float countAverageCourseRating(List<Reviews> courseReviews) {
         Integer sumRating = 0;
         for (Reviews review : courseReviews) {
             sumRating += review.getRating();
@@ -243,6 +248,27 @@ public class CoursesService {
         return rating;
     }
 
+    public HttpStatus addNewCourse(AddNewCourseDto addNewCourseDto) {
 
+        try {
+            if (!coursesRepository.findByCourseName(addNewCourseDto.getCourseName()).isEmpty())
+                return HttpStatus.ALREADY_REPORTED;
+
+            Courses course = new Courses();
+            course.setCourseName(addNewCourseDto.getCourseName());
+            course.setAuthor(usersRepository.findById(addNewCourseDto.getAuthorId()).get());
+            course.setTopic(addNewCourseDto.getTopic());
+            course.setShortDescription(addNewCourseDto.getShortDescription());
+            course.setLongDescription(addNewCourseDto.getLongDescription());
+            course.setCourseImg(addNewCourseDto.getCourseImg());
+            course.setSkillLevel(addNewCourseDto.getSkillLevel());
+            course.setLastUpdate(new Timestamp(new Date().getTime()));
+            coursesRepository.save(course);
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+
+    }
 
 }
