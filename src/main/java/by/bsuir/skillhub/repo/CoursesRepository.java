@@ -13,5 +13,6 @@ public interface CoursesRepository extends JpaRepository<Courses, Long> {
     List<Courses> findByCourseName(String courseName);
     List<Courses> findByTopic(String topic);
     List<Courses> findByAuthor(Users user);
+    List<Courses> findByAuthorAndCourseNameContainingIgnoreCase(Users user, String courseName);
     List<Courses> findBySkillLevel(Courses.SkillLevel skillLevel);
 }
