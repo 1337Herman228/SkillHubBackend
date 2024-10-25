@@ -24,6 +24,7 @@ public class CoursesService {
     private final CoursesRepository coursesRepository;
     private final ReviewsRepository reviewsRepository;
     private final UsersRepository usersRepository;
+    private final ResourcesRepository resourcesRepository;
 
     public List<Courses> getUserCoursesWithAccess(Users user) {
         List<CourseAccess> allUserCourses = courseAccessRepository.findByUser(user);
@@ -52,6 +53,10 @@ public class CoursesService {
             allCourseLessons.addAll(lessons);
         }
         return allCourseLessons;
+    }
+
+    public List<Lessons> getAllChapterLessons(Chapters chapter) {
+        return lessonsRepository.findByChapter(chapter);
     }
 
     public float calculateUserProgressInPercents(Users user, Courses course) {
@@ -106,7 +111,7 @@ public class CoursesService {
 
             //Находим общую длительность уроков
             List<Lessons> allCourseLessons = getAllCourseLessons(course);
-            int sumDuration = countAllLessonsDuration(allCourseLessons);
+            int sumDuration = countLessonsDuration(allCourseLessons);
 
             //Находим рейтинг курса
             List<Reviews> courseReviews = reviewsRepository.findByCourse(course);
@@ -163,7 +168,7 @@ public class CoursesService {
 
             //Находим общую длительность уроков
             List<Lessons> allCourseLessons = getAllCourseLessons(course);
-            int sumDuration = countAllLessonsDuration(allCourseLessons);
+            int sumDuration = countLessonsDuration(allCourseLessons);
 
             //Находим рейтинг курса
             List<Reviews> courseReviews = reviewsRepository.findByCourse(course);
@@ -223,7 +228,7 @@ public class CoursesService {
         }
     }
 
-    public int countAllLessonsDuration(List<Lessons> lessons) {
+    public int countLessonsDuration(List<Lessons> lessons) {
         int sumDuration = 0;
         for (Lessons lesson : lessons) {
             if (lesson.getDuration() == null) {
@@ -269,6 +274,119 @@ public class CoursesService {
             return HttpStatus.BAD_REQUEST;
         }
 
+    }
+
+    public CourseInfoDto getCourseInfo(Courses course) {
+
+        List<Lessons> lessons = getAllCourseLessons(course);
+        List<LessonWithResourcesDto> lessonWithResourcesDtoList = new ArrayList<>();
+
+        //находим информацию о курсе
+        int duration = countLessonsDuration(lessons);
+        int allLessonsCount = lessons.size();
+        //Находим рейтинг курса
+        List<Reviews> courseReviews = reviewsRepository.findByCourse(course);
+        float rating = countAverageCourseRating(courseReviews);
+        int reviewsCount = courseReviews.size();
+        // Находим кол-во студентов
+        List<CourseAccess> courseAccessList = courseAccessRepository.findByCourse(course);
+        int studentsCount = courseAccessList.size();
+        //Кол-во тестов
+        int testsCount = 0;
+        for(Lessons lesson : lessons) {
+            //Подсчитываем кол-во тестов
+            if(lesson.getLessonType().equals(Lessons.LessonType.TEST)) testsCount++;
+
+            //Находим ресурсы для урока
+            List<Resources> lessonResources = resourcesRepository.findByLesson(lesson);
+            List<ResourceDto> resourceDtoList = new ArrayList<>();
+            for(Resources resource : lessonResources) {
+                ResourceDto resourceDto = new ResourceDto();
+                resourceDto.setResourceId(resource.getResourceId());
+                resourceDto.setLessonId(resource.getLesson().getLessonId());
+                resourceDto.setResourceTitle(resource.getResourceTitle());
+                resourceDto.setResourceLink(resource.getResourceLink());
+                resourceDtoList.add(resourceDto);
+            }
+
+            //Заполняем список уроков
+            LessonWithResourcesDto lessonWithResourcesDto = makeLessonWithResourcesDto(lesson, resourceDtoList);
+            lessonWithResourcesDtoList.add(lessonWithResourcesDto);
+        }
+
+        //Заполняем информацию о курсе
+        InfoDto infoDto = new InfoDto();
+        infoDto.setDuration(duration);
+        infoDto.setAllLessonsCount(allLessonsCount);
+        infoDto.setRating(rating);
+        infoDto.setReviewsCount(reviewsCount);
+        infoDto.setStudentsCount(studentsCount);
+        infoDto.setTestsCount(testsCount);
+
+        //Заполняем список глав
+        List<Chapters> chapters = chaptersRepository.findByCourse(course);
+        List<ChapterDto> chapterDtoList = new ArrayList<>();
+        for(Chapters chapter : chapters){
+            //Заполняем базовой информацией
+            ChapterDto chapterDto = makeChapterDto(chapter);
+            //Находим кол-во уроков в главе
+            List<Lessons> chapterLessons = getAllChapterLessons(chapter);
+            chapterDto.setLessonsCount(chapterLessons.size());
+            //Находим общую длительность главы
+            chapterDto.setDuration(countLessonsDuration(chapterLessons));
+            chapterDtoList.add(chapterDto);
+        }
+
+        //Заполняем Dto
+        CourseInfoDto courseInfoDto = new CourseInfoDto();
+        courseInfoDto.setCourse(makeCourseDto(course));
+        courseInfoDto.setInfo(infoDto);
+        courseInfoDto.setChapters(chapterDtoList);
+        courseInfoDto.setLessons(lessonWithResourcesDtoList);
+
+        return courseInfoDto;
+    }
+
+//    public int
+
+    public CourseDto makeCourseDto (Courses course) {
+        CourseDto courseDto = new CourseDto();
+
+        courseDto.setCourseId(course.getCourseId());
+        courseDto.setCourseImg(course.getCourseImg());
+        courseDto.setCourseName(course.getCourseName());
+        courseDto.setAuthor(course.getAuthor());
+        courseDto.setLastUpdate(course.getLastUpdate());
+        courseDto.setTopic(course.getTopic());
+        courseDto.setSkillLevel(course.getSkillLevel());
+        courseDto.setShortDescription(course.getShortDescription());
+        courseDto.setLongDescription(course.getLongDescription());
+
+        return courseDto;
+    }
+
+    public ChapterDto makeChapterDto (Chapters chapter) {
+        ChapterDto chapterDto = new ChapterDto();
+        chapterDto.setChapterId(chapter.getChapterId());
+        chapterDto.setChapterTitle(chapter.getChapterTitle());
+        chapterDto.setChapterOrder(chapter.getChapterOrder());
+        chapterDto.setCourseId(chapter.getCourse().getCourseId());
+        return chapterDto;
+    }
+
+    public LessonWithResourcesDto makeLessonWithResourcesDto (Lessons lessons, List<ResourceDto> resources) {
+        LessonWithResourcesDto lessonWithResourcesDto = new LessonWithResourcesDto();
+        lessonWithResourcesDto.setLessonId(lessons.getLessonId());
+        lessonWithResourcesDto.setChapterId(lessons.getChapter().getChapterId());
+        lessonWithResourcesDto.setLessonOrder(lessons.getLessonOrder());
+        lessonWithResourcesDto.setLessonTitle(lessons.getLessonTitle());
+        lessonWithResourcesDto.setLessonType(lessons.getLessonType());
+        //Проверяем длительность урока
+        lessonWithResourcesDto.setDuration(lessons.getDuration() == null ? null : lessons.getDuration());
+        lessonWithResourcesDto.setDiamondReward(lessons.getDiamondReward());
+        lessonWithResourcesDto.setResources(resources);
+
+        return lessonWithResourcesDto;
     }
 
 }

@@ -1,6 +1,7 @@
 package by.bsuir.skillhub.controllers;
 
 import by.bsuir.skillhub.dto.*;
+import by.bsuir.skillhub.repo.CoursesRepository;
 import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.entity.UserProgress;
 import by.bsuir.skillhub.repo.UserProgressRepository;
@@ -26,6 +27,7 @@ public class UserController {
     private final CoursesService coursesService;
     private final UsersRepository usersRepository;
     private final UserProgressRepository userProgressRepository;
+    private final CoursesRepository coursesRepository;
 
     //Находим пользователя по ID
     @GetMapping("/get-user/{userId}")
@@ -75,18 +77,18 @@ public class UserController {
 
     @PostMapping("/add-teacher-request")
     @ResponseStatus(HttpStatus.OK)
-    public HttpStatus addTeacherRequest(@RequestBody AddTeacherRequest requestBody) throws Exception {
+    public HttpStatus addTeacherRequest(@RequestBody AddTeacherRequest requestBody) {
         return userService.addBecomeTeacherRecord(requestBody);
     }
 
     @PutMapping("/change-user-password")
     @ResponseStatus(HttpStatus.OK)
-    public HttpStatus changeUserPassword(@RequestBody ChangeUserPasswordDto requestBody) throws Exception {
+    public HttpStatus changeUserPassword(@RequestBody ChangeUserPasswordDto requestBody) {
         return userService.changeUserPassword(requestBody);
     }
 
     @GetMapping("/get-user-interest-courses/{userId}")
-    public List<UserInterestCoursesDto> getUserInterestCourses(@PathVariable Long userId) throws Exception {
+    public List<UserInterestCoursesDto> getUserInterestCourses(@PathVariable Long userId) {
         return coursesService.findUserInterestCourses(usersRepository.findById(userId).get());
     }
 
@@ -95,6 +97,11 @@ public class UserController {
         return coursesService.findUserInterestCoursesByName(
                 usersRepository.findById(requestBody.getUserId()).get(),
                 requestBody.getCourseName());
+    }
+
+    @GetMapping("/get-course-info/{courseId}")
+    public CourseInfoDto getCourseInfo(@PathVariable Long courseId) {
+        return coursesService.getCourseInfo(coursesRepository.findById(courseId).get());
     }
 
 }
