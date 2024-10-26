@@ -104,4 +104,9 @@ public class UserController {
         return coursesService.getCourseInfo(coursesRepository.findById(courseId).get());
     }
 
+    @GetMapping("/get-course-lesson/{lessonId}")
+    public CourseLessonDto getLessonById(@PathVariable Long lessonId) throws Exception {
+        return coursesService.getCourseLessonById(lessonId);
+    }
+
 }

@@ -17,6 +17,6 @@ public class TestAnswers {
     @JoinColumn(name = "question_id", nullable = false)
     private TestQuestions testQuestion;
 
-    @Column(length = 200, nullable = false)
-    private String answer;
+    @Column(length = 500, nullable = false)
+    private String answer; //HTML
 }

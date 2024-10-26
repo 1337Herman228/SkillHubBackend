@@ -71,13 +71,60 @@ VALUES (10000, 10000, 10001, '<p>A variable is a storage location for data.</p>'
 
 -- Заполнение таблицы video_lessons
 INSERT INTO video_lessons (lesson_id, video_url, video_lesson_id)
-VALUES (10000, 'http://example.com/video1', 10000),
-       (10001, 'http://example.com/video2', 10001),
-       (10002, 'http://example.com/video3', 10002);
+VALUES (10000, '/upload-videos/X2Download.com-Hollywood Undead - Bullet (Lyric Video).mp4', 10000),
+       (10001, '/upload-videos/X2Download.com-Hollywood Undead - Bullet (Lyric Video).mp4', 10001),
+       (10002, '/upload-videos/X2Download.com-Hollywood Undead - Bullet (Lyric Video).mp4', 10002);
 
 -- Заполнение таблицы text_lessons
 INSERT INTO text_lessons (lesson_id, lesson_body)
-VALUES (10001, '<p>This lesson introduces programming basics.</p>'),
+VALUES (10001, '<h2>Введение в JavaScript</h2>
+<p>JavaScript — это язык программирования, который позволяет создавать интерактивные элементы на веб-страницах.</p>
+
+<h3>Основные концепции</h3>
+<ul>
+    <li>Переменные</li>
+    <li>Типы данных</li>
+    <li>Условия</li>
+    <li>Циклы</li>
+</ul>
+
+<h3>Переменные</h3>
+<p>Переменные используются для хранения данных. В JavaScript можно объявить переменные с помощью <code>var</code>, <code>let</code> или <code>const</code>.</p>
+
+<ol>
+    <li><strong>var</strong> - устаревший способ объявления переменных.</li>
+    <li><strong>let</strong> - позволяет создавать переменные с блочной областью видимости.</li>
+    <li><strong>const</strong> - используется для объявления констант, которые не могут быть изменены.</li>
+</ol>
+
+<h3>Типы данных</h3>
+<p>JavaScript поддерживает несколько основных типов данных:</p>
+<ul>
+    <li><strong>string</strong> - строки текста.</li>
+    <li><strong>number</strong> - числовые значения.</li>
+    <li><strong>boolean</strong> - логические значения (<code>true</code> или <code>false</code>).</li>
+    <li><strong>object</strong> - сложные структуры данных.</li>
+    <li><strong>array</strong> - массивы, которые являются типом объекта.</li>
+</ul>
+
+<h3>Условия</h3>
+<p>Условия позволяют выполнять разные блоки кода в зависимости от выполнения определенных условий. Пример:</p>
+<code>
+if (condition) {<br>
+    // код, выполняемый при выполнении условия<br>
+}
+</code>
+
+<h3>Циклы</h3>
+<p>Циклы используются для выполнения одного и того же блока кода несколько раз. Пример цикла <code>for</code>:</p>
+<code>
+for (let i = 0; i < 10; i++) {<br>
+    console.log(i);<br>
+}
+</code>
+
+<h3>Заключение</h3>
+<p>JavaScript — мощный инструмент для веб-разработчиков, который позволяет создавать динамичные и интерактивные веб-страницы.</p>'),
        (10002, '<p>Test your knowledge with this quiz.</p>');
 -- Test lessons do not have a duration
 
