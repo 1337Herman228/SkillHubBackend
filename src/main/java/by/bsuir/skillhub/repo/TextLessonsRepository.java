@@ -4,9 +4,9 @@ import by.bsuir.skillhub.entity.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TextLessonsRepository extends JpaRepository<TextLessons, Long> {
-    List<TextLessons> findByLesson(Lessons lesson);
+    Optional<TextLessons> findByLesson(Lessons lesson);
 }

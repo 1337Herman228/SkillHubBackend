@@ -5,9 +5,9 @@ import by.bsuir.skillhub.entity.Tests;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TestsRepository extends JpaRepository<Tests, Long> {
-    List<Tests> findByLesson(Lessons lesson);
+    Optional<Tests> findByLesson(Lessons lesson);
 }

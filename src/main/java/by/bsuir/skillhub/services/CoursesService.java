@@ -25,6 +25,11 @@ public class CoursesService {
     private final ReviewsRepository reviewsRepository;
     private final UsersRepository usersRepository;
     private final ResourcesRepository resourcesRepository;
+    private final VideoLessonsRepository videoLessonsRepository;
+    private final TextLessonsRepository textLessonsRepository;
+    private final TestsRepository testsRepository;
+    private final TestQuestionsRepository testQuestionsRepository;
+    private final TestAnswersRepository testAnswersRepository;
 
     public List<Courses> getUserCoursesWithAccess(Users user) {
         List<CourseAccess> allUserCourses = courseAccessRepository.findByUser(user);
@@ -90,7 +95,7 @@ public class CoursesService {
     }
 
     public List<AllCoursesDto> findTeacherCoursesByName(Users user, String courseName) {
-        List<Courses> teacherCourses = coursesRepository.findByAuthorAndCourseNameContainingIgnoreCase(user,courseName);
+        List<Courses> teacherCourses = coursesRepository.findByAuthorAndCourseNameContainingIgnoreCase(user, courseName);
         return makeAllCoursesDtoList(teacherCourses, user);
     }
 
@@ -293,14 +298,14 @@ public class CoursesService {
         int studentsCount = courseAccessList.size();
         //Кол-во тестов
         int testsCount = 0;
-        for(Lessons lesson : lessons) {
+        for (Lessons lesson : lessons) {
             //Подсчитываем кол-во тестов
-            if(lesson.getLessonType().equals(Lessons.LessonType.TEST)) testsCount++;
+            if (lesson.getLessonType().equals(Lessons.LessonType.TEST)) testsCount++;
 
             //Находим ресурсы для урока
             List<Resources> lessonResources = resourcesRepository.findByLesson(lesson);
             List<ResourceDto> resourceDtoList = new ArrayList<>();
-            for(Resources resource : lessonResources) {
+            for (Resources resource : lessonResources) {
                 ResourceDto resourceDto = new ResourceDto();
                 resourceDto.setResourceId(resource.getResourceId());
                 resourceDto.setLessonId(resource.getLesson().getLessonId());
@@ -326,7 +331,7 @@ public class CoursesService {
         //Заполняем список глав
         List<Chapters> chapters = chaptersRepository.findByCourse(course);
         List<ChapterDto> chapterDtoList = new ArrayList<>();
-        for(Chapters chapter : chapters){
+        for (Chapters chapter : chapters) {
             //Заполняем базовой информацией
             ChapterDto chapterDto = makeChapterDto(chapter);
             //Находим кол-во уроков в главе
@@ -349,7 +354,7 @@ public class CoursesService {
 
 //    public int
 
-    public CourseDto makeCourseDto (Courses course) {
+    public CourseDto makeCourseDto(Courses course) {
         CourseDto courseDto = new CourseDto();
 
         courseDto.setCourseId(course.getCourseId());
@@ -365,7 +370,7 @@ public class CoursesService {
         return courseDto;
     }
 
-    public ChapterDto makeChapterDto (Chapters chapter) {
+    public ChapterDto makeChapterDto(Chapters chapter) {
         ChapterDto chapterDto = new ChapterDto();
         chapterDto.setChapterId(chapter.getChapterId());
         chapterDto.setChapterTitle(chapter.getChapterTitle());
@@ -374,7 +379,7 @@ public class CoursesService {
         return chapterDto;
     }
 
-    public LessonWithResourcesDto makeLessonWithResourcesDto (Lessons lessons, List<ResourceDto> resources) {
+    public LessonWithResourcesDto makeLessonWithResourcesDto(Lessons lessons, List<ResourceDto> resources) {
         LessonWithResourcesDto lessonWithResourcesDto = new LessonWithResourcesDto();
         lessonWithResourcesDto.setLessonId(lessons.getLessonId());
         lessonWithResourcesDto.setChapterId(lessons.getChapter().getChapterId());
@@ -388,5 +393,109 @@ public class CoursesService {
 
         return lessonWithResourcesDto;
     }
+
+    public CourseLessonDto getCourseLessonById(Long lessonId) throws Exception {
+        try {
+            Optional<Lessons> lesson = lessonsRepository.findById(lessonId);
+            switch (lesson.get().getLessonType()) {
+                case VIDEO -> {
+                    Optional<VideoLessons> videoLessons = videoLessonsRepository.findByLesson(lesson.get());
+
+                    return getVideoLessonDto(videoLessons, lesson);
+                }
+                case TEST -> {
+                    Optional<Tests> test = testsRepository.findByLesson(lesson.get());
+
+                    TestLessonDto testLessonDto = new TestLessonDto();
+                    testLessonDto.setLessonId(lesson.get().getLessonId());
+                    testLessonDto.setTestId(test.get().getTestId());
+                    testLessonDto.setTestDescription(test.get().getTestDescription());
+
+                    //Заполняем вопросы для теста
+                    List<TestQuestionDto> testQuestionDtoList = getTestQuestionsByTest(test.get());
+                    testLessonDto.setTestQuestions(testQuestionDtoList);
+                    //Заполняем ответы для теста
+                    List<TestAnswerDto> testAnswerDtoList = new ArrayList<>();
+                    for (TestQuestionDto testQuestionDto : testQuestionDtoList) {
+                        //Ищем ответы для каждого вопроса и добавляем к общим ответам
+                        testAnswerDtoList.addAll(getTestAnswersByTestQuestion(testQuestionsRepository.findById(testQuestionDto.getQuestionId()).get()));
+                    }
+                    testLessonDto.setTestAnswers(testAnswerDtoList);
+
+                    CourseLessonDto courseLessonDto = new CourseLessonDto();
+                    courseLessonDto.setLessonId(lesson.get().getLessonId());
+                    courseLessonDto.setLessonType(lesson.get().getLessonType());
+                    courseLessonDto.setTestLesson(testLessonDto);
+
+                    return courseLessonDto;
+                }
+                case TEXT -> {
+                    Optional<TextLessons> textLessons = textLessonsRepository.findByLesson(lesson.get());
+
+                    return getTestLessonDto(lesson, textLessons);
+                }
+
+            }
+        } catch (Exception e) {
+            throw new Exception("Can't add access request", e);
+        }
+        return null;
+    }
+
+    private List<TestQuestionDto> getTestQuestionsByTest(Tests test) {
+        List<TestQuestions> testQuestions = testQuestionsRepository.findByTest(test);
+        List<TestQuestionDto> testQuestionDtoList = new ArrayList<>();
+        for (TestQuestions testQuestion : testQuestions) {
+            TestQuestionDto testQuestionDto = new TestQuestionDto();
+            testQuestionDto.setQuestionId(testQuestion.getQuestionId());
+            testQuestionDto.setTestId(test.getTestId());
+            testQuestionDto.setQuestionText(testQuestion.getQuestionText());
+            testQuestionDto.setAnswerDescription(testQuestion.getAnswerDescription());
+            testQuestionDto.setCorrectAnswerId(testQuestion.getCorrectAnswer().getTestAnswerId());
+            testQuestionDtoList.add(testQuestionDto);
+        }
+        return testQuestionDtoList;
+    }
+
+    private List<TestAnswerDto> getTestAnswersByTestQuestion(TestQuestions testQuestions) {
+        List<TestAnswers> testAnswers = testAnswersRepository.findByTestQuestion(testQuestions);
+        List<TestAnswerDto> testAnswerDtoList = new ArrayList<>();
+        for (TestAnswers testAnswer : testAnswers) {
+            TestAnswerDto testAnswerDto = new TestAnswerDto();
+            testAnswerDto.setTestAnswerId(testAnswer.getTestAnswerId());
+            testAnswerDto.setTestQuestionId(testAnswer.getTestQuestion().getQuestionId());
+            testAnswerDto.setAnswer(testAnswer.getAnswer());
+            testAnswerDtoList.add(testAnswerDto);
+        }
+        return testAnswerDtoList;
+    }
+
+    private static CourseLessonDto getTestLessonDto(Optional<Lessons> lesson, Optional<TextLessons> textLessons) {
+        TextLessonDto textLessonDto = new TextLessonDto();
+        textLessonDto.setLessonId(lesson.get().getLessonId());
+        textLessonDto.setTextLessonId(textLessons.get().getTextLessonId());
+        textLessonDto.setLessonBody(textLessons.get().getLessonBody());
+        textLessonDto.setTitle(lesson.get().getLessonTitle());
+
+        CourseLessonDto courseLessonDto = new CourseLessonDto();
+        courseLessonDto.setLessonId(lesson.get().getLessonId());
+        courseLessonDto.setLessonType(lesson.get().getLessonType());
+        courseLessonDto.setTextLesson(textLessonDto);
+        return courseLessonDto;
+    }
+
+    private static CourseLessonDto getVideoLessonDto(Optional<VideoLessons> videoLessons, Optional<Lessons> lesson) {
+        VideoLessonDto videoLessonDto = new VideoLessonDto();
+        videoLessonDto.setLessonId(videoLessons.get().getLesson().getLessonId());
+        videoLessonDto.setVideoLessonId(videoLessons.get().getVideoLessonId());
+        videoLessonDto.setVideoUrl(videoLessons.get().getVideoUrl());
+
+        CourseLessonDto courseLessonDto = new CourseLessonDto();
+        courseLessonDto.setLessonId(lesson.get().getLessonId());
+        courseLessonDto.setLessonType(lesson.get().getLessonType());
+        courseLessonDto.setVideoLesson(videoLessonDto);
+        return courseLessonDto;
+    }
+
 
 }
