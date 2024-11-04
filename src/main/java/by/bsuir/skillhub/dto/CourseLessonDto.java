@@ -7,6 +7,7 @@ import lombok.Data;
 public class CourseLessonDto {
     private Long lessonId;
     private Lessons.LessonType lessonType;
+    private String lessonTitle;
     private VideoLessonDto videoLesson;
     private TextLessonDto textLesson;
     private TestLessonDto testLesson;

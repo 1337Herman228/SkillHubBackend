@@ -49,6 +49,22 @@ public class CoursesService {
         return userProgressRepository.findByUserAndCourse(user, course);
     }
 
+    public List<ChapterDto> getAllCourseChapters (Courses course) {
+        List<Chapters> allCourseChapters = chaptersRepository.findByCourse(course);
+        List<ChapterDto> allCourseChaptersDto = new ArrayList<>();
+        for (Chapters chapter : allCourseChapters) {
+            ChapterDto chapterDto = new ChapterDto();
+            chapterDto.setCourseId(chapter.getCourse().getCourseId());
+            chapterDto.setChapterTitle(chapter.getChapterTitle());
+            chapterDto.setChapterOrder(chapter.getChapterOrder());
+            chapterDto.setChapterId(chapter.getChapterId());
+            chapterDto.setLessonsCount(getAllChapterLessons(chapter).size());
+            chapterDto.setDuration(countLessonsDuration(getAllChapterLessons(chapter)));
+            allCourseChaptersDto.add(chapterDto);
+        }
+        return allCourseChaptersDto;
+    }
+
     public List<Lessons> getAllCourseLessons(Courses course) {
         List<Chapters> allCourseChapters = chaptersRepository.findByCourse(course);
         //Кол-во всех уроков в курсе
@@ -267,19 +283,149 @@ public class CoursesService {
             Courses course = new Courses();
             course.setCourseName(addNewCourseDto.getCourseName());
             course.setAuthor(usersRepository.findById(addNewCourseDto.getAuthorId()).get());
-            course.setTopic(addNewCourseDto.getTopic());
-            course.setShortDescription(addNewCourseDto.getShortDescription());
-            course.setLongDescription(addNewCourseDto.getLongDescription());
-            course.setCourseImg(addNewCourseDto.getCourseImg());
-            course.setSkillLevel(addNewCourseDto.getSkillLevel());
-            course.setLastUpdate(new Timestamp(new Date().getTime()));
-            coursesRepository.save(course);
+            return setCourseInfo(course, addNewCourseDto.getTopic(), addNewCourseDto.getShortDescription(), addNewCourseDto.getLongDescription(), addNewCourseDto.getCourseImg(), addNewCourseDto.getSkillLevel());
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+
+    }
+
+    public HttpStatus addNewChapter(AddNewChapterDto addNewChapterDto) {
+        try {
+            if(!chaptersRepository.findByChapterTitle(addNewChapterDto.getChapterTitle()).isEmpty())
+                return HttpStatus.ALREADY_REPORTED;
+
+            Courses course = coursesRepository.findById(addNewChapterDto.getCourseId()).get();
+
+            Chapters chapter = new Chapters();
+            chapter.setCourse(course);
+            chapter.setChapterTitle(addNewChapterDto.getChapterTitle());
+            chapter.setChapterOrder(findLastChapterOrder(getAllCourseChapters(course))+1);
+            chaptersRepository.save(chapter);
+
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.BAD_REQUEST;
         }
 
     }
+
+    public HttpStatus addNewVideoLesson(AddNewVideoLessonDto addNewVideoLessonDto) {
+        try {
+            Chapters chapter = chaptersRepository.findById(addNewVideoLessonDto.getChapterId()).get();
+
+            Lessons lesson = new Lessons();
+            lesson.setLessonTitle(addNewVideoLessonDto.getLessonTitle());
+            lesson.setLessonType(addNewVideoLessonDto.getLessonType());
+            lesson.setLessonTitle(addNewVideoLessonDto.getLessonTitle());
+            lesson.setDuration(addNewVideoLessonDto.getDuration());
+            lesson.setDiamondReward((short) addNewVideoLessonDto.getDiamondReward());
+            lesson.setChapter(chapter);
+            lesson.setLessonOrder(findLastLessonOrder(lessonsRepository.findByChapter(chapter))+1);
+            lessonsRepository.save(lesson);
+
+            VideoLessons videoLesson = new VideoLessons();
+            videoLesson.setLesson(lesson);
+            videoLesson.setVideoUrl(addNewVideoLessonDto.getVideoUrl());
+            videoLessonsRepository.save(videoLesson);
+
+            List<Resources> resources = new ArrayList<>();
+            for(ResourcesDto resourcesDto : addNewVideoLessonDto.getResources()) {
+                Resources resource = new Resources();
+                resource.setLesson(lesson);
+                resource.setResourceLink(resourcesDto.getLink());
+                resource.setResourceTitle(resourcesDto.getTitle());
+                resources.add(resource);
+            }
+            resourcesRepository.saveAll(resources);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+
+    }
+
+
+    public int findLastChapterOrder (List<ChapterDto> chapters) {
+        int lastOrder = 0;
+        for (ChapterDto chapter : chapters) {
+            if (chapter.getChapterOrder() > lastOrder) {
+                lastOrder = chapter.getChapterOrder();
+            }
+        }
+        return lastOrder;
+    }
+
+    public int findLastLessonOrder (List<Lessons> lessons) {
+        int lastOrder = 0;
+        for (Lessons lesson : lessons) {
+            if (lesson.getLessonOrder() > lastOrder) {
+                lastOrder = lesson.getLessonOrder();
+            }
+        }
+        return lastOrder;
+    }
+
+    public HttpStatus editCourse(EditCourseDto editCourseDto) {
+        try {
+            if (!coursesRepository.findByCourseName(editCourseDto.getCourseName()).isEmpty()
+            && !coursesRepository.findById(editCourseDto.getCourseId()).get().getCourseName().equals(editCourseDto.getCourseName()))
+                return HttpStatus.ALREADY_REPORTED;
+
+            Courses course = coursesRepository.findById(editCourseDto.getCourseId()).get();
+            course.setCourseName(editCourseDto.getCourseName());
+            return setCourseInfo(course, editCourseDto.getTopic(), editCourseDto.getShortDescription(), editCourseDto.getLongDescription(), editCourseDto.getCourseImg(), editCourseDto.getSkillLevel());
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+
+    }
+
+    public HttpStatus editLesson(EditVideoLessonDto editVideoLessonDto) {
+        try {
+
+            Lessons lesson = lessonsRepository.findById(editVideoLessonDto.getLessonId()).get();
+            lesson.setLessonTitle(editVideoLessonDto.getLessonTitle());
+            lesson.setLessonType(editVideoLessonDto.getLessonType());
+            lesson.setDiamondReward((short) editVideoLessonDto.getDiamondReward());
+            lesson.setDuration(editVideoLessonDto.getDuration());
+            lesson.setChapter(chaptersRepository.findById(editVideoLessonDto.getChapterId()).get());
+            lessonsRepository.save(lesson);
+
+            VideoLessons videoLesson = videoLessonsRepository.findByLesson(lesson).get();
+            videoLesson.setVideoUrl(editVideoLessonDto.getVideoUrl());
+            videoLessonsRepository.save(videoLesson);
+
+            resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
+            List<Resources> resources = new ArrayList<>();
+            for(ResourcesDto resourcesDto : editVideoLessonDto.getResources()) {
+                Resources resource = new Resources();
+                resource.setLesson(lesson);
+                resource.setResourceLink(resourcesDto.getLink());
+                resource.setResourceTitle(resourcesDto.getTitle());
+                resources.add(resource);
+            }
+            resourcesRepository.saveAll(resources);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+
+    }
+
+    private HttpStatus setCourseInfo(Courses course, String topic, String shortDescription, String longDescription, String courseImg, Courses.SkillLevel skillLevel) {
+        course.setTopic(topic);
+        course.setShortDescription(shortDescription);
+        course.setLongDescription(longDescription);
+        course.setCourseImg(courseImg);
+        course.setSkillLevel(skillLevel);
+        course.setLastUpdate(new Timestamp(new Date().getTime()));
+        coursesRepository.save(course);
+        return HttpStatus.OK;
+    }
+
 
     public CourseInfoDto getCourseInfo(Courses course) {
 
@@ -414,6 +560,7 @@ public class CoursesService {
                     //Заполняем вопросы для теста
                     List<TestQuestionDto> testQuestionDtoList = getTestQuestionsByTest(test.get());
                     testLessonDto.setTestQuestions(testQuestionDtoList);
+                    testLessonDto.setName(lesson.get().getLessonTitle());
                     //Заполняем ответы для теста
                     List<TestAnswerDto> testAnswerDtoList = new ArrayList<>();
                     for (TestQuestionDto testQuestionDto : testQuestionDtoList) {
@@ -426,6 +573,7 @@ public class CoursesService {
                     courseLessonDto.setLessonId(lesson.get().getLessonId());
                     courseLessonDto.setLessonType(lesson.get().getLessonType());
                     courseLessonDto.setTestLesson(testLessonDto);
+                    courseLessonDto.setLessonTitle(lesson.get().getLessonTitle());
 
                     return courseLessonDto;
                 }
@@ -481,6 +629,7 @@ public class CoursesService {
         courseLessonDto.setLessonId(lesson.get().getLessonId());
         courseLessonDto.setLessonType(lesson.get().getLessonType());
         courseLessonDto.setTextLesson(textLessonDto);
+        courseLessonDto.setLessonTitle(lesson.get().getLessonTitle());
         return courseLessonDto;
     }
 
@@ -494,6 +643,7 @@ public class CoursesService {
         courseLessonDto.setLessonId(lesson.get().getLessonId());
         courseLessonDto.setLessonType(lesson.get().getLessonType());
         courseLessonDto.setVideoLesson(videoLessonDto);
+        courseLessonDto.setLessonTitle(lesson.get().getLessonTitle());
         return courseLessonDto;
     }
 
