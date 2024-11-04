@@ -1,11 +1,7 @@
 package by.bsuir.skillhub.controllers;
 
 
-import by.bsuir.skillhub.dto.AddNewCourseDto;
-import by.bsuir.skillhub.dto.AllCoursesDto;
-import by.bsuir.skillhub.dto.FindCourseByNameForUserDto;
-import by.bsuir.skillhub.dto.UserInterestCoursesDto;
-import by.bsuir.skillhub.repo.UserProgressRepository;
+import by.bsuir.skillhub.dto.*;
 import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.services.CoursesService;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +36,30 @@ public class TeacherController {
     @PostMapping("/add-new-course")
     public HttpStatus addNewCourse(@RequestBody AddNewCourseDto requestBody) throws Exception {
         return coursesService.addNewCourse(requestBody);
+    }
+
+    @PostMapping("/add-new-chapter")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus addNewChapter(@RequestBody AddNewChapterDto requestBody) throws Exception {
+        return coursesService.addNewChapter(requestBody);
+    }
+
+    @PostMapping("/add-new-video-lesson")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus addNewVideoLesson(@RequestBody AddNewVideoLessonDto requestBody) throws Exception {
+        return coursesService.addNewVideoLesson(requestBody);
+    }
+
+    @PutMapping("/edit-video-lesson")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus editVideoLesson(@RequestBody EditVideoLessonDto requestBody) throws Exception {
+        return coursesService.editLesson(requestBody);
+    }
+
+    @PutMapping("/edit-course")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus editCourse(@RequestBody EditCourseDto requestBody) throws Exception {
+        return coursesService.editCourse(requestBody);
     }
 
 }
