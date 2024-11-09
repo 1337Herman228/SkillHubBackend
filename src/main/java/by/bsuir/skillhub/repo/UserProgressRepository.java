@@ -10,5 +10,6 @@ import java.util.List;
 public interface UserProgressRepository extends JpaRepository<UserProgress, Long> {
     List<UserProgress> findByLesson(Lessons lesson);
     List<UserProgress> findByUser(Users user);
+    List<UserProgress> findByCourse(Courses course);
     List<UserProgress> findByUserAndCourse(Users user,Courses course);
 }

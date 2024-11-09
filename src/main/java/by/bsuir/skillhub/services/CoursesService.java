@@ -30,6 +30,9 @@ public class CoursesService {
     private final TestsRepository testsRepository;
     private final TestQuestionsRepository testQuestionsRepository;
     private final TestAnswersRepository testAnswersRepository;
+    private final UserNotesRepository userNotesRepository;
+    private final QuestionsRepository questionsRepository;
+    private final AnswersRepository answersRepository;
 
     public List<Courses> getUserCoursesWithAccess(Users user) {
         List<CourseAccess> allUserCourses = courseAccessRepository.findByUser(user);
@@ -49,7 +52,7 @@ public class CoursesService {
         return userProgressRepository.findByUserAndCourse(user, course);
     }
 
-    public List<ChapterDto> getAllCourseChapters (Courses course) {
+    public List<ChapterDto> getAllCourseChapters(Courses course) {
         List<Chapters> allCourseChapters = chaptersRepository.findByCourse(course);
         List<ChapterDto> allCourseChaptersDto = new ArrayList<>();
         for (Chapters chapter : allCourseChapters) {
@@ -292,7 +295,7 @@ public class CoursesService {
 
     public HttpStatus addNewChapter(AddNewChapterDto addNewChapterDto) {
         try {
-            if(!chaptersRepository.findByChapterTitle(addNewChapterDto.getChapterTitle()).isEmpty())
+            if (!chaptersRepository.findByChapterTitle(addNewChapterDto.getChapterTitle()).isEmpty())
                 return HttpStatus.ALREADY_REPORTED;
 
             Courses course = coursesRepository.findById(addNewChapterDto.getCourseId()).get();
@@ -300,7 +303,7 @@ public class CoursesService {
             Chapters chapter = new Chapters();
             chapter.setCourse(course);
             chapter.setChapterTitle(addNewChapterDto.getChapterTitle());
-            chapter.setChapterOrder(findLastChapterOrder(getAllCourseChapters(course))+1);
+            chapter.setChapterOrder(findLastChapterOrder(getAllCourseChapters(course)) + 1);
             chaptersRepository.save(chapter);
 
             return HttpStatus.OK;
@@ -321,7 +324,7 @@ public class CoursesService {
             lesson.setDuration(addNewVideoLessonDto.getDuration());
             lesson.setDiamondReward((short) addNewVideoLessonDto.getDiamondReward());
             lesson.setChapter(chapter);
-            lesson.setLessonOrder(findLastLessonOrder(lessonsRepository.findByChapter(chapter))+1);
+            lesson.setLessonOrder(findLastLessonOrder(lessonsRepository.findByChapter(chapter)) + 1);
             lessonsRepository.save(lesson);
 
             VideoLessons videoLesson = new VideoLessons();
@@ -330,7 +333,7 @@ public class CoursesService {
             videoLessonsRepository.save(videoLesson);
 
             List<Resources> resources = new ArrayList<>();
-            for(ResourcesDto resourcesDto : addNewVideoLessonDto.getResources()) {
+            for (ResourcesDto resourcesDto : addNewVideoLessonDto.getResources()) {
                 Resources resource = new Resources();
                 resource.setLesson(lesson);
                 resource.setResourceLink(resourcesDto.getLink());
@@ -346,8 +349,164 @@ public class CoursesService {
 
     }
 
+    public HttpStatus addNewTextLesson(AddNewTextLessonDto addNewTextLessonDto) {
+        try {
+            Chapters chapter = chaptersRepository.findById(addNewTextLessonDto.getChapterId()).get();
 
-    public int findLastChapterOrder (List<ChapterDto> chapters) {
+            Lessons lesson = new Lessons();
+            lesson.setLessonTitle(addNewTextLessonDto.getLessonTitle());
+            lesson.setLessonType(addNewTextLessonDto.getLessonType());
+            lesson.setLessonTitle(addNewTextLessonDto.getLessonTitle());
+            lesson.setDuration(addNewTextLessonDto.getDuration());
+            lesson.setDiamondReward((short) addNewTextLessonDto.getDiamondReward());
+            lesson.setChapter(chapter);
+            lesson.setLessonOrder(findLastLessonOrder(lessonsRepository.findByChapter(chapter)) + 1);
+            lessonsRepository.save(lesson);
+
+            TextLessons textLessons = new TextLessons();
+            textLessons.setLesson(lesson);
+            textLessons.setLessonBody(addNewTextLessonDto.getHtml());
+            textLessonsRepository.save(textLessons);
+
+            List<Resources> resources = new ArrayList<>();
+            for (ResourcesDto resourcesDto : addNewTextLessonDto.getResources()) {
+                Resources resource = new Resources();
+                resource.setLesson(lesson);
+                resource.setResourceLink(resourcesDto.getLink());
+                resource.setResourceTitle(resourcesDto.getTitle());
+                resources.add(resource);
+            }
+            resourcesRepository.saveAll(resources);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public HttpStatus addTestLesson(AddTestLessonDto addTestLessonDto) {
+        try {
+            Chapters chapter = chaptersRepository.findById(addTestLessonDto.getChapterId()).get();
+
+            Lessons lesson = new Lessons();
+            lesson.setLessonTitle(addTestLessonDto.getLessonTitle());
+            lesson.setLessonType(addTestLessonDto.getLessonType());
+            lesson.setLessonTitle(addTestLessonDto.getLessonTitle());
+            lesson.setDuration(null);
+            lesson.setDiamondReward((short) addTestLessonDto.getDiamondReward());
+            lesson.setChapter(chapter);
+            lesson.setLessonOrder(findLastLessonOrder(lessonsRepository.findByChapter(chapter)) + 1);
+            lessonsRepository.save(lesson);
+
+            Tests test = new Tests();
+            test.setLesson(lesson);
+            testsRepository.save(test);
+
+            for (AddTestQuestionDto addTestQuestionDto : addTestLessonDto.getQuestions()) {
+
+                TestQuestions testQuestion = new TestQuestions();
+                testQuestion.setTest(test);
+                testQuestion.setQuestionText(addTestQuestionDto.getQuestionText());
+                testQuestion.setCorrectAnswer(null);
+                testQuestionsRepository.save(testQuestion);
+
+                for (AddTestAnswerDto addTestAnswerDto : addTestQuestionDto.getAnswers()) {
+                    TestAnswers testAnswer = new TestAnswers();
+                    testAnswer.setTestQuestion(testQuestion);
+                    testAnswer.setAnswer(addTestAnswerDto.getAnswerText());
+
+                    if (addTestQuestionDto.getCorrectAnswerId().equals(addTestAnswerDto.getAnswerId())) {
+                        testQuestion.setCorrectAnswer(testAnswer);
+                        testQuestion.setAnswerDescription(addTestAnswerDto.getAnswerText());
+                    }
+                    testAnswersRepository.save(testAnswer);
+                }
+                testQuestionsRepository.save(testQuestion);
+
+            }
+
+            List<Resources> resources = new ArrayList<>();
+            for (ResourcesDto resourcesDto : addTestLessonDto.getResources()) {
+                Resources resource = new Resources();
+                resource.setLesson(lesson);
+                resource.setResourceLink(resourcesDto.getLink());
+                resource.setResourceTitle(resourcesDto.getTitle());
+                resources.add(resource);
+            }
+            resourcesRepository.saveAll(resources);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public HttpStatus editTestLesson(EditTestLessonDto editTestLessonDto) {
+        try {
+            Chapters chapter = chaptersRepository.findById(editTestLessonDto.getChapterId()).get();
+
+            Lessons lesson = lessonsRepository.findById(editTestLessonDto.getLessonId()).get();
+            lesson.setLessonTitle(editTestLessonDto.getLessonTitle());
+            lesson.setLessonType(editTestLessonDto.getLessonType());
+            lesson.setLessonTitle(editTestLessonDto.getLessonTitle());
+            lesson.setDiamondReward((short) editTestLessonDto.getDiamondReward());
+            lesson.setChapter(chapter);
+            lessonsRepository.save(lesson);
+
+            Tests test = testsRepository.findByLesson(lesson).get();
+            test.setLesson(lesson);
+            testsRepository.save(test);
+
+            List<TestQuestions> testQuestions = testQuestionsRepository.findByTest(test);
+            for (TestQuestions testQuestion : testQuestions) {
+                testQuestion.setCorrectAnswer(null);
+
+                List<TestAnswers> testAnswers = testAnswersRepository.findByTestQuestion(testQuestion);
+                testAnswersRepository.deleteAll(testAnswers);
+                testQuestionsRepository.delete(testQuestion);
+            }
+
+            for (AddTestQuestionDto addTestQuestionDto : editTestLessonDto.getQuestions()) {
+
+                TestQuestions testQuestion = new TestQuestions();
+                testQuestion.setTest(test);
+                testQuestion.setQuestionText(addTestQuestionDto.getQuestionText());
+                testQuestion.setCorrectAnswer(null);
+                testQuestionsRepository.save(testQuestion);
+
+                for (AddTestAnswerDto addTestAnswerDto : addTestQuestionDto.getAnswers()) {
+                    TestAnswers testAnswer = new TestAnswers();
+                    testAnswer.setTestQuestion(testQuestion);
+                    testAnswer.setAnswer(addTestAnswerDto.getAnswerText());
+
+                    if (addTestQuestionDto.getCorrectAnswerId().equals(addTestAnswerDto.getAnswerId())) {
+                        testQuestion.setCorrectAnswer(testAnswer);
+                        testQuestion.setAnswerDescription(addTestAnswerDto.getAnswerText());
+                    }
+                    testAnswersRepository.save(testAnswer);
+                }
+                testQuestionsRepository.save(testQuestion);
+
+            }
+
+            resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
+            List<Resources> resources = new ArrayList<>();
+            for (ResourcesDto resourcesDto : editTestLessonDto.getResources()) {
+                Resources resource = new Resources();
+                resource.setLesson(lesson);
+                resource.setResourceLink(resourcesDto.getLink());
+                resource.setResourceTitle(resourcesDto.getTitle());
+                resources.add(resource);
+            }
+            resourcesRepository.saveAll(resources);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public int findLastChapterOrder(List<ChapterDto> chapters) {
         int lastOrder = 0;
         for (ChapterDto chapter : chapters) {
             if (chapter.getChapterOrder() > lastOrder) {
@@ -357,7 +516,7 @@ public class CoursesService {
         return lastOrder;
     }
 
-    public int findLastLessonOrder (List<Lessons> lessons) {
+    public int findLastLessonOrder(List<Lessons> lessons) {
         int lastOrder = 0;
         for (Lessons lesson : lessons) {
             if (lesson.getLessonOrder() > lastOrder) {
@@ -370,7 +529,7 @@ public class CoursesService {
     public HttpStatus editCourse(EditCourseDto editCourseDto) {
         try {
             if (!coursesRepository.findByCourseName(editCourseDto.getCourseName()).isEmpty()
-            && !coursesRepository.findById(editCourseDto.getCourseId()).get().getCourseName().equals(editCourseDto.getCourseName()))
+                    && !coursesRepository.findById(editCourseDto.getCourseId()).get().getCourseName().equals(editCourseDto.getCourseName()))
                 return HttpStatus.ALREADY_REPORTED;
 
             Courses course = coursesRepository.findById(editCourseDto.getCourseId()).get();
@@ -382,7 +541,7 @@ public class CoursesService {
 
     }
 
-    public HttpStatus editLesson(EditVideoLessonDto editVideoLessonDto) {
+    public HttpStatus editVideoLesson(EditVideoLessonDto editVideoLessonDto) {
         try {
 
             Lessons lesson = lessonsRepository.findById(editVideoLessonDto.getLessonId()).get();
@@ -399,7 +558,7 @@ public class CoursesService {
 
             resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
             List<Resources> resources = new ArrayList<>();
-            for(ResourcesDto resourcesDto : editVideoLessonDto.getResources()) {
+            for (ResourcesDto resourcesDto : editVideoLessonDto.getResources()) {
                 Resources resource = new Resources();
                 resource.setLesson(lesson);
                 resource.setResourceLink(resourcesDto.getLink());
@@ -415,6 +574,39 @@ public class CoursesService {
 
     }
 
+    public HttpStatus editTextLesson(EditTextLessonDto editTextLessonDto) {
+        try {
+
+            Lessons lesson = lessonsRepository.findById(editTextLessonDto.getLessonId()).get();
+            lesson.setLessonTitle(editTextLessonDto.getLessonTitle());
+            lesson.setLessonType(editTextLessonDto.getLessonType());
+            lesson.setDiamondReward((short) editTextLessonDto.getDiamondReward());
+            lesson.setDuration(editTextLessonDto.getDuration());
+            lesson.setChapter(chaptersRepository.findById(editTextLessonDto.getChapterId()).get());
+            lessonsRepository.save(lesson);
+
+            TextLessons textLessons = textLessonsRepository.findByLesson(lesson).get();
+            textLessons.setLesson(lesson);
+            textLessons.setLessonBody(editTextLessonDto.getHtml());
+            textLessonsRepository.save(textLessons);
+
+            resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
+            List<Resources> resources = new ArrayList<>();
+            for (ResourcesDto resourcesDto : editTextLessonDto.getResources()) {
+                Resources resource = new Resources();
+                resource.setLesson(lesson);
+                resource.setResourceLink(resourcesDto.getLink());
+                resource.setResourceTitle(resourcesDto.getTitle());
+                resources.add(resource);
+            }
+            resourcesRepository.saveAll(resources);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
     private HttpStatus setCourseInfo(Courses course, String topic, String shortDescription, String longDescription, String courseImg, Courses.SkillLevel skillLevel) {
         course.setTopic(topic);
         course.setShortDescription(shortDescription);
@@ -426,6 +618,135 @@ public class CoursesService {
         return HttpStatus.OK;
     }
 
+    public HttpStatus deleteCourse(Long courseId) {
+        try {
+            // Получаем курс, если он существует
+            Courses course = coursesRepository.findById(courseId).orElse(null);
+            if (course == null) {
+                return HttpStatus.NOT_FOUND; // Возвращаем 404, если курс не найден
+            }
+
+            // Получаем связанные главы
+            List<Chapters> chapters = chaptersRepository.findByCourse(course);
+            for (Chapters chapter : chapters) {
+                // Получаем уроки по главе
+                List<Lessons> lessons = lessonsRepository.findByChapter(chapter);
+
+                for (Lessons lesson : lessons) {
+                    // Удаляем ресурсы урока
+                    resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
+
+                    // Удаляем текстовые уроки, если они существуют
+                    textLessonsRepository.findByLesson(lesson)
+                            .ifPresent(textLessonsRepository::delete);
+
+                    // Удаляем видеоролики урока, если они существуют
+                    videoLessonsRepository.findByLesson(lesson)
+                            .ifPresent(videoLessonsRepository::delete);
+
+                    // Получаем тесты по уроку
+                    Tests tests = testsRepository.findByLesson(lesson).orElse(null);
+                    if (tests != null) {
+                        // Получаем вопросы по тесту
+                        List<TestQuestions> testQuestions = testQuestionsRepository.findByTest(tests);
+                        for (TestQuestions testQuestion : testQuestions) {
+                            testQuestion.setCorrectAnswer(null);
+                            testQuestionsRepository.save(testQuestion);
+
+                            // Удаляем ответы на вопросы
+                            List<TestAnswers> testAnswers = testAnswersRepository.findByTestQuestion(testQuestion);
+                            testAnswersRepository.deleteAll(testAnswers);
+                        }
+
+                        // Удаляем все тестовые вопросы и тесты
+                        testQuestionsRepository.deleteAll(testQuestions);
+                        testsRepository.delete(tests);
+                    }
+
+                    // Удаляем заметки пользователей по уроку
+                    userNotesRepository.deleteAll(userNotesRepository.findByLesson(lesson));
+
+                    // Удаляем вопросы урока
+                    List<Questions> questions = questionsRepository.findByLesson(lesson);
+                    for (Questions question : questions) {
+                        answersRepository.deleteAll(answersRepository.findByQuestion(question));
+                    }
+                    questionsRepository.deleteAll(questions);
+                }
+                // Удаляем все уроки в главе
+                lessonsRepository.deleteAll(lessons);
+            }
+
+            // Удаляем все главы
+            chaptersRepository.deleteAll(chapters);
+            // Удаляем отзывы, доступы и прогресс пользователей по курсу
+            reviewsRepository.deleteAll(reviewsRepository.findByCourse(course));
+            courseAccessRepository.deleteAll(courseAccessRepository.findByCourse(course));
+            userProgressRepository.deleteAll(userProgressRepository.findByCourse(course));
+
+            // Удаляем курс
+            coursesRepository.deleteById(courseId);
+
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public HttpStatus deleteLesson(Long lessonId) {
+        try {
+
+            Lessons lesson = lessonsRepository.findById(lessonId).get();
+
+            // Удаляем ресурсы урока
+            resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
+
+            // Удаляем текстовые уроки, если они существуют
+            textLessonsRepository.findByLesson(lesson)
+                    .ifPresent(textLessonsRepository::delete);
+
+            // Удаляем видеоролики урока, если они существуют
+            videoLessonsRepository.findByLesson(lesson)
+                    .ifPresent(videoLessonsRepository::delete);
+
+            // Получаем тесты по уроку
+            Tests tests = testsRepository.findByLesson(lesson).orElse(null);
+            if (tests != null) {
+                // Получаем вопросы по тесту
+                List<TestQuestions> testQuestions = testQuestionsRepository.findByTest(tests);
+                for (TestQuestions testQuestion : testQuestions) {
+                    testQuestion.setCorrectAnswer(null);
+                    testQuestionsRepository.save(testQuestion);
+
+                    // Удаляем ответы на вопросы
+                    List<TestAnswers> testAnswers = testAnswersRepository.findByTestQuestion(testQuestion);
+                    testAnswersRepository.deleteAll(testAnswers);
+                }
+
+                // Удаляем все тестовые вопросы и тесты
+                testQuestionsRepository.deleteAll(testQuestions);
+                testsRepository.delete(tests);
+            }
+
+            // Удаляем заметки пользователей по уроку
+            userNotesRepository.deleteAll(userNotesRepository.findByLesson(lesson));
+
+            // Удаляем вопросы урока
+            List<Questions> questions = questionsRepository.findByLesson(lesson);
+            for (Questions question : questions) {
+                answersRepository.deleteAll(answersRepository.findByQuestion(question));
+            }
+            questionsRepository.deleteAll(questions);
+
+            lessonsRepository.delete(lesson);
+
+            return HttpStatus.OK;
+
+
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
 
     public CourseInfoDto getCourseInfo(Courses course) {
 
