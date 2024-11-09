@@ -50,16 +50,52 @@ public class TeacherController {
         return coursesService.addNewVideoLesson(requestBody);
     }
 
+    @PostMapping("/add-new-text-lesson")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus addNewTextLesson(@RequestBody AddNewTextLessonDto requestBody) throws Exception {
+        return coursesService.addNewTextLesson(requestBody);
+    }
+
+    @PostMapping("/add-new-test-lesson")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus addNewTestLesson(@RequestBody AddTestLessonDto requestBody) throws Exception {
+        return coursesService.addTestLesson(requestBody);
+    }
+
     @PutMapping("/edit-video-lesson")
     @ResponseStatus(HttpStatus.OK)
     public HttpStatus editVideoLesson(@RequestBody EditVideoLessonDto requestBody) throws Exception {
-        return coursesService.editLesson(requestBody);
+        return coursesService.editVideoLesson(requestBody);
+    }
+
+    @PutMapping("/edit-text-lesson")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus editTextLesson(@RequestBody EditTextLessonDto requestBody) throws Exception {
+        return coursesService.editTextLesson(requestBody);
+    }
+
+    @PutMapping("/edit-test-lesson")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus editTestLesson(@RequestBody EditTestLessonDto requestBody) throws Exception {
+        return coursesService.editTestLesson(requestBody);
     }
 
     @PutMapping("/edit-course")
     @ResponseStatus(HttpStatus.OK)
     public HttpStatus editCourse(@RequestBody EditCourseDto requestBody) throws Exception {
         return coursesService.editCourse(requestBody);
+    }
+
+    @DeleteMapping("/delete-course/{courseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus deleteCourse(@PathVariable Long courseId) throws Exception {
+        return coursesService.deleteCourse(courseId);
+    }
+
+    @DeleteMapping("/delete-lesson/{lessonId}")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus deleteLesson(@PathVariable Long lessonId) throws Exception {
+        return coursesService.deleteLesson(lessonId);
     }
 
 }
