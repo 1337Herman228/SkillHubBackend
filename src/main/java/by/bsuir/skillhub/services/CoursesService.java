@@ -47,6 +47,107 @@ public class CoursesService {
         return userCoursesWithAccess;
     }
 
+    public List<GetAccessUsersDto> getRequestAccessUsers(Long courseId) {
+        List<CourseAccess> courseAccessList = courseAccessRepository.findByCourse(coursesRepository.findById(courseId).get());
+        return getAccessList(courseAccessList, CourseAccess.AccessStatus.PENDING);
+    }
+
+    public List<GetAccessUsersDto> getRequestAccessUsersByName(GetHasAccessUsersByNameDto getHasAccessUsersByNameDto) {
+        List<CourseAccess> courseAccessList =
+                courseAccessRepository.findByCourse(coursesRepository.findById(getHasAccessUsersByNameDto.getCourseId()).get());
+        return getAccessListByName(courseAccessList, CourseAccess.AccessStatus.PENDING, getHasAccessUsersByNameDto.getUsername());
+    }
+
+    public List<GetAccessUsersDto> getHasAccessUsers(Long courseId) {
+        List<CourseAccess> courseAccessList = courseAccessRepository.findByCourse(coursesRepository.findById(courseId).get());
+        return getAccessList(courseAccessList, CourseAccess.AccessStatus.APPROVED);
+    }
+
+    public List<GetAccessUsersDto> getHasAccessUsersByName(GetHasAccessUsersByNameDto getHasAccessUsersByNameDto) {
+        List<CourseAccess> courseAccessList = courseAccessRepository.findByCourse(coursesRepository.findById(getHasAccessUsersByNameDto.getCourseId()).get());
+        return getAccessListByName(courseAccessList, CourseAccess.AccessStatus.APPROVED, getHasAccessUsersByNameDto.getUsername());
+    }
+
+    public HttpStatus approveCourseAccess(EditCourseAccessDto editCourseAccessDto) {
+        try{
+            CourseAccess courseAccess = courseAccessRepository.findById(editCourseAccessDto.getAccessId()).get();
+            courseAccess.setStatus(CourseAccess.AccessStatus.APPROVED);
+            courseAccess.setGrantedDate(new Timestamp(new Date().getTime()));
+            courseAccessRepository.save(courseAccess);
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus rejectCourseAccess(EditCourseAccessDto editCourseAccessDto) {
+        try{
+            CourseAccess courseAccess = courseAccessRepository.findById(editCourseAccessDto.getAccessId()).get();
+            courseAccess.setStatus(CourseAccess.AccessStatus.REJECTED);
+            courseAccess.setGrantedDate(new Timestamp(new Date().getTime()));
+            courseAccessRepository.save(courseAccess);
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+
+
+    private List<GetAccessUsersDto> getAccessList(List<CourseAccess> courseAccessList, CourseAccess.AccessStatus status) {
+        List<GetAccessUsersDto> getAccessUsersDtoList = new ArrayList<>();
+        for (CourseAccess courseAccess : courseAccessList) {
+            if (courseAccess.getStatus() == status) {
+
+                getAccessUserDto(getAccessUsersDtoList, courseAccess);
+            }
+        }
+        return getAccessUsersDtoList;
+    }
+
+    private List<GetAccessUsersDto> getAccessListByName(List<CourseAccess> courseAccessList, CourseAccess.AccessStatus status, String username) {
+        List<GetAccessUsersDto> getAccessUsersDtoList = new ArrayList<>();
+        for (CourseAccess courseAccess : courseAccessList) {
+            if (courseAccess.getStatus() == status && (
+                    courseAccess.getUser().getPerson().getName().contains(username) ||
+                            courseAccess.getUser().getPerson().getSurname().contains(username) ||
+                    (courseAccess.getUser().getPerson().getName() + " " + courseAccess.getUser().getPerson().getSurname()).contains(username))
+            ) {
+
+                getAccessUserDto(getAccessUsersDtoList, courseAccess);
+            }
+        }
+        return getAccessUsersDtoList;
+    }
+
+    public HttpStatus removeUserAccess(Long userId, Long courseId) {
+        try {
+            CourseAccess courseAccess = courseAccessRepository.findByUserAndCourse(usersRepository.findById(userId).get(), coursesRepository.findById(courseId).get()).get();
+            courseAccessRepository.delete(courseAccess);
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    private void getAccessUserDto(List<GetAccessUsersDto> getAccessUsersDtoList, CourseAccess courseAccess) {
+        GetAccessUsersDto getAccessUsersDto = new GetAccessUsersDto();
+        getAccessUsersDto.setAccessId(courseAccess.getAccessId());
+        getAccessUsersDto.setGrantedDate(courseAccess.getGrantedDate());
+        getAccessUsersDto.setRequestDate(courseAccess.getRequestDate());
+
+        Users user = courseAccess.getUser();
+        UserDto userDto = new UserDto();
+        userDto.setUserId(user.getUserId());
+        userDto.setLogin(user.getLogin());
+        userDto.setDiamonds(user.getDiamonds());
+        userDto.setRole(user.getRole());
+        userDto.setPerson(user.getPerson());
+        getAccessUsersDto.setUser(userDto);
+
+        getAccessUsersDtoList.add(getAccessUsersDto);
+    }
+
     public List<UserProgress> getUserFinishedLessons(Users user, Courses course) {
         //Кол-во пройденных уроков
         return userProgressRepository.findByUserAndCourse(user, course);
