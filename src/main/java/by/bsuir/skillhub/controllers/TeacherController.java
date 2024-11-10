@@ -26,6 +26,36 @@ public class TeacherController {
         return coursesService.getTeacherCourses(usersRepository.findById(teacherId).get());
     }
 
+    @GetMapping("/get-request-access-users/{courseId}")
+    public List<GetAccessUsersDto> getRequestAccessUsers(@PathVariable Long courseId) throws Exception {
+        return coursesService.getRequestAccessUsers(courseId);
+    }
+
+    @PostMapping("/get-request-access-users-by-name")
+    public List<GetAccessUsersDto> getRequestAccessUsersByName(@RequestBody GetHasAccessUsersByNameDto requestBody) throws Exception {
+        return coursesService.getRequestAccessUsersByName(requestBody);
+    }
+
+    @PutMapping("/approve-course-access")
+    public HttpStatus approveCourseAccess(@RequestBody EditCourseAccessDto requestBody) throws Exception {
+        return coursesService.approveCourseAccess(requestBody);
+    }
+
+    @PutMapping("/reject-course-access")
+    public HttpStatus rejectCourseAccess(@RequestBody EditCourseAccessDto requestBody) throws Exception {
+        return coursesService.rejectCourseAccess(requestBody);
+    }
+
+    @GetMapping("/get-has-access-users/{courseId}")
+    public List<GetAccessUsersDto> getHasAccessUsers(@PathVariable Long courseId) throws Exception {
+        return coursesService.getHasAccessUsers(courseId);
+    }
+
+    @PostMapping("/get-has-access-users-by-name")
+    public List<GetAccessUsersDto> getHasAccessUsersByName(@RequestBody GetHasAccessUsersByNameDto requestBody) throws Exception {
+        return coursesService.getHasAccessUsersByName(requestBody);
+    }
+
     @PostMapping("/find-teacher-courses-by-name")
     public List<AllCoursesDto> findTeacherCoursesByName(@RequestBody FindCourseByNameForUserDto requestBody) throws Exception {
         return coursesService.findTeacherCoursesByName(
@@ -96,6 +126,12 @@ public class TeacherController {
     @ResponseStatus(HttpStatus.OK)
     public HttpStatus deleteLesson(@PathVariable Long lessonId) throws Exception {
         return coursesService.deleteLesson(lessonId);
+    }
+
+    @DeleteMapping("/remove-user-access/{userId}/{courseId}")
+    @ResponseStatus(HttpStatus.OK)
+    public HttpStatus removeUserAccess(@PathVariable Long userId, @PathVariable Long courseId) throws Exception {
+        return coursesService.removeUserAccess(userId, courseId);
     }
 
 }
