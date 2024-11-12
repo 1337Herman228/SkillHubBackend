@@ -92,6 +92,29 @@ public class UserController {
         return coursesService.findUserInterestCourses(usersRepository.findById(userId).get());
     }
 
+    @GetMapping("/get-user-progress/{userId}/{courseId}")
+    public UserProgressDto getUserProgress(@PathVariable Long userId, @PathVariable Long courseId) {
+        return coursesService.getUserProgress(userId, courseId);
+    }
+
+    @GetMapping("/is-lesson-passed/{userId}/{lessonId}")
+    public boolean isLessonPassed(@PathVariable Long userId, @PathVariable Long lessonId) {
+        return coursesService.isLessonPassed(userId, lessonId);
+    }
+
+    @PostMapping("/mark-lesson-as-passed")
+    public HttpStatus markLessonAsPassed(@RequestBody MarkLessonAsPassedDto markLessonAsPassedDto) {
+        return coursesService.markLessonAsPassed(
+                markLessonAsPassedDto.getUserId(),
+                markLessonAsPassedDto.getCourseId(),
+                markLessonAsPassedDto.getLessonId());
+    }
+
+    @DeleteMapping("/mark-lesson-as-unpassed/{userId}/{lessonId}")
+    public HttpStatus markLessonAsUnpassed(@PathVariable Long userId, @PathVariable Long lessonId) {
+        return coursesService.markLessonAsUnpassed(userId, lessonId);
+    }
+
     @PostMapping("/find-user-interest-courses-by-name")
     public List<UserInterestCoursesDto> findUserInterestCoursesByName(@RequestBody FindCourseByNameForUserDto requestBody) throws Exception {
         return coursesService.findUserInterestCoursesByName(

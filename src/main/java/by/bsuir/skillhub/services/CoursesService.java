@@ -69,29 +69,28 @@ public class CoursesService {
     }
 
     public HttpStatus approveCourseAccess(EditCourseAccessDto editCourseAccessDto) {
-        try{
+        try {
             CourseAccess courseAccess = courseAccessRepository.findById(editCourseAccessDto.getAccessId()).get();
             courseAccess.setStatus(CourseAccess.AccessStatus.APPROVED);
             courseAccess.setGrantedDate(new Timestamp(new Date().getTime()));
             courseAccessRepository.save(courseAccess);
             return HttpStatus.OK;
-        }catch (Exception e){
+        } catch (Exception e) {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
     }
 
     public HttpStatus rejectCourseAccess(EditCourseAccessDto editCourseAccessDto) {
-        try{
+        try {
             CourseAccess courseAccess = courseAccessRepository.findById(editCourseAccessDto.getAccessId()).get();
             courseAccess.setStatus(CourseAccess.AccessStatus.REJECTED);
             courseAccess.setGrantedDate(new Timestamp(new Date().getTime()));
             courseAccessRepository.save(courseAccess);
             return HttpStatus.OK;
-        }catch (Exception e){
+        } catch (Exception e) {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
     }
-
 
 
     private List<GetAccessUsersDto> getAccessList(List<CourseAccess> courseAccessList, CourseAccess.AccessStatus status) {
@@ -111,7 +110,7 @@ public class CoursesService {
             if (courseAccess.getStatus() == status && (
                     courseAccess.getUser().getPerson().getName().contains(username) ||
                             courseAccess.getUser().getPerson().getSurname().contains(username) ||
-                    (courseAccess.getUser().getPerson().getName() + " " + courseAccess.getUser().getPerson().getSurname()).contains(username))
+                            (courseAccess.getUser().getPerson().getName() + " " + courseAccess.getUser().getPerson().getSurname()).contains(username))
             ) {
 
                 getAccessUserDto(getAccessUsersDtoList, courseAccess);
@@ -207,6 +206,62 @@ public class CoursesService {
             continueCourseDtos.add(continueCourseDto);
         }
         return continueCourseDtos;
+    }
+
+    public UserProgressDto getUserProgress(Long userId, Long courseId) {
+        Users user = usersRepository.findById(userId).get();
+        Courses course = coursesRepository.findById(courseId).get();
+        UserProgressDto userProgress = new UserProgressDto();
+        userProgress.setProgressInPercents(calculateUserProgressInPercents(user, course));
+        userProgress.setAllLessonsCount(getAllCourseLessons(course).size());
+        userProgress.setCompletedLessonsCount(getUserFinishedLessons(user, course).size());
+        return userProgress;
+    }
+
+    public HttpStatus markLessonAsPassed(Long userId, Long courseId, Long lessonId) {
+        try {
+
+//            Optional<UserProgress> userProgressCheck = userProgressRepository.findByUserAndLesson(
+//                    usersRepository.findById(userId).get(),
+//                    lessonsRepository.findById(lessonId).get());
+//            if (userProgressCheck.isPresent()) return HttpStatus.BAD_REQUEST;
+
+            System.out.println(userId);
+
+            Users user = usersRepository.findById(userId).get();
+            Courses course = coursesRepository.findById(courseId).get();
+            Lessons lesson = lessonsRepository.findById(lessonId).get();
+            UserProgress userProgress = new UserProgress();
+            userProgress.setUser(user);
+            userProgress.setCourse(course);
+            userProgress.setLesson(lesson);
+            userProgressRepository.save(userProgress);
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public HttpStatus markLessonAsUnpassed(Long userId, Long lessonId) {
+        try {
+            Users user = usersRepository.findById(userId).get();
+            Lessons lesson = lessonsRepository.findById(lessonId).get();
+            UserProgress userProgress = userProgressRepository.findByUserAndLesson(user,lesson).get();
+            userProgressRepository.delete(userProgress);
+            return HttpStatus.OK;
+        } catch (Exception e) {
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public boolean isLessonPassed(Long userId, Long lessonId) {
+        try {
+            Users user = usersRepository.findById(userId).get();
+            Lessons lesson = lessonsRepository.findById(lessonId).get();
+            return userProgressRepository.findByUserAndLesson(user, lesson).isPresent();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public List<AllCoursesDto> getTeacherCourses(Users user) {
