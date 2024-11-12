@@ -15,8 +15,7 @@ public class UserProgress {
     private Long progressId;
 
     @ManyToOne
-    @MapsId("userId")
-    @JoinColumn(name = "user_id", referencedColumnName = "userId", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private Users user;
 
     @ManyToOne
@@ -27,7 +26,4 @@ public class UserProgress {
     @JoinColumn(name = "course_id", nullable = false)
     private Courses course;
 
-    //Если есть запись в таблице, то урок помечен как пройденный
-//    @Column(nullable = false)
-//    private Boolean completed;
 }
