@@ -221,13 +221,6 @@ public class CoursesService {
     public HttpStatus markLessonAsPassed(Long userId, Long courseId, Long lessonId) {
         try {
 
-//            Optional<UserProgress> userProgressCheck = userProgressRepository.findByUserAndLesson(
-//                    usersRepository.findById(userId).get(),
-//                    lessonsRepository.findById(lessonId).get());
-//            if (userProgressCheck.isPresent()) return HttpStatus.BAD_REQUEST;
-
-            System.out.println(userId);
-
             Users user = usersRepository.findById(userId).get();
             Courses course = coursesRepository.findById(courseId).get();
             Lessons lesson = lessonsRepository.findById(lessonId).get();
@@ -856,6 +849,8 @@ public class CoursesService {
 
             // Удаляем ресурсы урока
             resourcesRepository.deleteAll(resourcesRepository.findByLesson(lesson));
+
+            userProgressRepository.deleteAll(userProgressRepository.findByLesson(lesson));
 
             // Удаляем текстовые уроки, если они существуют
             textLessonsRepository.findByLesson(lesson)
