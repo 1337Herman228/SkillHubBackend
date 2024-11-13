@@ -2,10 +2,12 @@ package by.bsuir.skillhub.controllers;
 
 import by.bsuir.skillhub.dto.*;
 import by.bsuir.skillhub.repo.CoursesRepository;
+import by.bsuir.skillhub.repo.LessonsRepository;
 import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.entity.UserProgress;
 import by.bsuir.skillhub.repo.UserProgressRepository;
 import by.bsuir.skillhub.services.CoursesService;
+import by.bsuir.skillhub.services.QuestionsService;
 import by.bsuir.skillhub.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,9 +27,11 @@ public class UserController {
 
     private final UserService userService;
     private final CoursesService coursesService;
+    private final QuestionsService questionsService;
     private final UsersRepository usersRepository;
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
+    private final LessonsRepository lessonsRepository;
 
     //Находим пользователя по ID
     @GetMapping("/get-user/{userId}")
@@ -133,8 +137,23 @@ public class UserController {
     }
 
     @GetMapping("/get-all-course-chapters/{courseId}")
-    public List<ChapterDto> getAllCourseChapters(@PathVariable Long courseId) throws Exception {
+    public List<ChapterDto> getAllCourseChapters(@PathVariable Long courseId) {
         return coursesService.getAllCourseChapters(coursesRepository.findById(courseId).get());
+    }
+
+    @GetMapping("/get-questions-for-lesson/{lessonId}")
+    public List<QuestionDto> getQuestionsForLesson(@PathVariable Long lessonId){
+        return questionsService.getQuestionsForLesson(lessonsRepository.findById(lessonId).get());
+    }
+
+    @PostMapping("/add-answer")
+    public HttpStatus addAnswer(@RequestBody AddAnswerDto answer) {
+        return questionsService.addAnswer(answer);
+    }
+
+    @PostMapping("/add-question")
+    public HttpStatus addQuestionToLesson(@RequestBody AddQuestionDto question) {
+        return questionsService.addQuestion(question);
     }
 
 }
