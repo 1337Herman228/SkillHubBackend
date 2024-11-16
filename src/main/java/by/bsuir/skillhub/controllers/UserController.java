@@ -7,6 +7,7 @@ import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.entity.UserProgress;
 import by.bsuir.skillhub.repo.UserProgressRepository;
 import by.bsuir.skillhub.services.CoursesService;
+import by.bsuir.skillhub.services.NotesService;
 import by.bsuir.skillhub.services.QuestionsService;
 import by.bsuir.skillhub.services.UserService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class UserController {
     private final UserService userService;
     private final CoursesService coursesService;
     private final QuestionsService questionsService;
+    private final NotesService notesService;
     private final UsersRepository usersRepository;
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
@@ -142,7 +144,7 @@ public class UserController {
     }
 
     @GetMapping("/get-questions-for-lesson/{lessonId}")
-    public List<QuestionDto> getQuestionsForLesson(@PathVariable Long lessonId){
+    public List<QuestionDto> getQuestionsForLesson(@PathVariable Long lessonId) {
         return questionsService.getQuestionsForLesson(lessonsRepository.findById(lessonId).get());
     }
 
@@ -154,6 +156,16 @@ public class UserController {
     @PostMapping("/add-question")
     public HttpStatus addQuestionToLesson(@RequestBody AddQuestionDto question) {
         return questionsService.addQuestion(question);
+    }
+
+    @GetMapping("/get-user-note/{userId}/{lessonId}")
+    public NoteDto  getUserNote(@PathVariable Long userId, @PathVariable Long lessonId) {
+        return notesService.getNoteByLessonAndUser(lessonsRepository.findById(lessonId).get(), usersRepository.findById(userId).get());
+    }
+
+    @PostMapping("/save-user-note")
+    public HttpStatus  saveUserNote(@RequestBody NoteDto noteDto) {
+        return notesService.saveNote(noteDto);
     }
 
 }
