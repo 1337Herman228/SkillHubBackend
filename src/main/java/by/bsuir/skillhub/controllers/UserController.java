@@ -6,10 +6,7 @@ import by.bsuir.skillhub.repo.LessonsRepository;
 import by.bsuir.skillhub.repo.UsersRepository;
 import by.bsuir.skillhub.entity.UserProgress;
 import by.bsuir.skillhub.repo.UserProgressRepository;
-import by.bsuir.skillhub.services.CoursesService;
-import by.bsuir.skillhub.services.NotesService;
-import by.bsuir.skillhub.services.QuestionsService;
-import by.bsuir.skillhub.services.UserService;
+import by.bsuir.skillhub.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +27,7 @@ public class UserController {
     private final CoursesService coursesService;
     private final QuestionsService questionsService;
     private final NotesService notesService;
+    private final ReviewsService reviewsService;
     private final UsersRepository usersRepository;
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
@@ -159,13 +157,34 @@ public class UserController {
     }
 
     @GetMapping("/get-user-note/{userId}/{lessonId}")
-    public NoteDto  getUserNote(@PathVariable Long userId, @PathVariable Long lessonId) {
+    public NoteDto getUserNote(@PathVariable Long userId, @PathVariable Long lessonId) {
         return notesService.getNoteByLessonAndUser(lessonsRepository.findById(lessonId).get(), usersRepository.findById(userId).get());
     }
 
     @PostMapping("/save-user-note")
-    public HttpStatus  saveUserNote(@RequestBody NoteDto noteDto) {
+    public HttpStatus saveUserNote(@RequestBody NoteDto noteDto) {
         return notesService.saveNote(noteDto);
+    }
+
+    @GetMapping("/get-course-rating-info/{courseId}")
+    public CourseRatingInfoDto getCourseRatingInfo(@PathVariable Long courseId) {
+        return reviewsService.getCourseRatingInfo(coursesRepository.findById(courseId).get());
+    }
+
+    @GetMapping("/get-course-reviews/{courseId}")
+    public List<ReviewDto> getCourseReviews(@PathVariable Long courseId) {
+        return reviewsService.getCourseReviews(coursesRepository.findById(courseId).get());
+    }
+
+    @GetMapping("/get-review-by-course-and-user/{courseId}/{userId}")
+    public ReviewDto
+    getCourseReviews(@PathVariable Long courseId, @PathVariable Long userId) {
+        return reviewsService.getReviewByCourseAndUser(coursesRepository.findById(courseId).get(), usersRepository.findById(userId).get());
+    }
+
+    @PostMapping("/save-user-review")
+    public HttpStatus saveUserReview(@RequestBody AddReviewDto reviewDto) {
+        return reviewsService.saveReview(reviewDto);
     }
 
 }
