@@ -24,6 +24,9 @@ public class Courses {
     @Column(nullable = false)
     private String courseName;
 
+    @Column(nullable = true)
+    private String certificate;
+
     @Column(length = 150, nullable = false)
     private String topic;
 

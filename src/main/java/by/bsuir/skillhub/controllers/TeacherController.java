@@ -46,6 +46,16 @@ public class TeacherController {
         return coursesService.rejectCourseAccess(requestBody);
     }
 
+    @PutMapping("/change-course-certificate")
+    public HttpStatus changeCourseCertificate(@RequestBody AddCertificateDto requestBody ) throws Exception {
+        return coursesService.changeCourseCertificate(requestBody.getCourseId(), requestBody.getCertificatePath());
+    }
+
+    @DeleteMapping("/delete-course-certificate/{courseId}")
+    public HttpStatus deleteCourseCertificate(@PathVariable Long courseId ) throws Exception {
+        return coursesService.deleteCourseCertificate(courseId);
+    }
+
     @GetMapping("/get-has-access-users/{courseId}")
     public List<GetAccessUsersDto> getHasAccessUsers(@PathVariable Long courseId) throws Exception {
         return coursesService.getHasAccessUsers(courseId);

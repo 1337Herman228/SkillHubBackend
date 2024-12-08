@@ -899,6 +899,30 @@ public class CoursesService {
         }
     }
 
+    public HttpStatus changeCourseCertificate(Long courseId, String certificatePath) {
+        try{
+            Courses course = coursesRepository.findById(courseId).orElse(null);
+            assert course != null;
+            course.setCertificate(certificatePath);
+            coursesRepository.save(course);
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public HttpStatus deleteCourseCertificate(Long courseId) {
+        try{
+            Courses course = coursesRepository.findById(courseId).orElse(null);
+            assert course != null;
+            course.setCertificate(null);
+            coursesRepository.save(course);
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.BAD_REQUEST;
+        }
+    }
+
     public CourseInfoDto getCourseInfo(Courses course) {
 
         List<Lessons> lessons = getAllCourseLessons(course);
@@ -970,8 +994,6 @@ public class CoursesService {
         return courseInfoDto;
     }
 
-//    public int
-
     public CourseDto makeCourseDto(Courses course) {
         CourseDto courseDto = new CourseDto();
 
@@ -981,6 +1003,7 @@ public class CoursesService {
         courseDto.setAuthor(course.getAuthor());
         courseDto.setLastUpdate(course.getLastUpdate());
         courseDto.setTopic(course.getTopic());
+        courseDto.setCertificate(course.getCertificate());
         courseDto.setSkillLevel(course.getSkillLevel());
         courseDto.setShortDescription(course.getShortDescription());
         courseDto.setLongDescription(course.getLongDescription());
