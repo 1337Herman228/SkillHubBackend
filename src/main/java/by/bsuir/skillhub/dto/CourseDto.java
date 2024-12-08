@@ -12,6 +12,7 @@ public class CourseDto {
     private Users author;
     private String courseName;
     private String topic;
+    private String certificate;
     private String shortDescription;
     private String longDescription;
     private String courseImg;
