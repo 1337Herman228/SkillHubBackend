@@ -1,4 +1,18 @@
+# Что нужно сделать, чтобы отправлялись
+
 spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: geragets@gmail.com
+    password: heta usdn jdhe xwvm
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
   datasource:
     url: jdbc:postgresql://localhost:5444/SkillHub-DB
     username: postgres
@@ -8,6 +22,9 @@ spring:
     hibernate:
       ddl-auto: update
 #      ddl-auto: create
+
+email:
+  username: geragets@gmail.com
 
 jwt:
   secret:
