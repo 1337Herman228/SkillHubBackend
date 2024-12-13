@@ -34,12 +34,6 @@ VALUES (10000, 10001, 'course-1.png', 'Introduction to Programming', 'Programmin
         '<p>This course dives deep into Java.</p>', CURRENT_TIMESTAMP),
        (10002, 10000, 'course-1.png', 'Teaching Techniques', 'Education', 'NORMAL',
         'Effective teaching strategies. An advanced course for experienced programmers.',
-        '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP),
-       (10003, 10000, 'course-1.png', 'Course-10003', 'Education', 'NORMAL',
-        'Effective teaching strategies. An advanced course for experienced programmers.',
-        '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP),
-       (10004, 10000, 'course-1.png', 'Course-10004', 'Education', 'NORMAL',
-        'Effective teaching strategies. An advanced course for experienced programmers.',
         '<p>This course helps teachers improve their methods.</p>', CURRENT_TIMESTAMP);
 
 -- Заполнение таблицы chapters
