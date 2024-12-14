@@ -4,9 +4,11 @@ import by.bsuir.skillhub.dto.*;
 import by.bsuir.skillhub.entity.BecomeTeacher;
 import by.bsuir.skillhub.entity.Persons;
 import by.bsuir.skillhub.entity.Users;
+import by.bsuir.skillhub.entity.RegistrationKeys;
 import by.bsuir.skillhub.repo.BecomeTeacherRepository;
 import by.bsuir.skillhub.repo.PersonsRepository;
 import by.bsuir.skillhub.repo.UsersRepository;
+import by.bsuir.skillhub.repo.RegistrationKeysRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,8 +27,10 @@ public class UserService {
 
     private final UsersRepository usersRepository;
     private final PersonsRepository personsRepository;
+    private final RegistrationKeysRepository registrationKeysRepository;
     private final BecomeTeacherRepository becomeTeacherRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public ResponseEntity<UserDto> getUser(Long userId) throws Exception {
         try {
@@ -100,6 +106,42 @@ public class UserService {
         } else {
             return HttpStatus.BAD_REQUEST;
         }
+    }
+
+   public List<RegistrationKeys> getAllRegistrationKeys(){
+        return registrationKeysRepository.findAll();
+   }
+
+    public List<RegistrationKeys> getRegistrationKeysByEmail(String email){
+        return registrationKeysRepository.findByEmailContainingIgnoreCase(email);
+    }
+
+    public HttpStatus deleteRegistrationKey(Long id){
+        registrationKeysRepository.deleteById(id);
+        return HttpStatus.OK;
+    }
+
+    public HttpStatus addRegistrationKey(String email){
+
+        if(registrationKeysRepository.findByEmail(email).isPresent()){
+            return HttpStatus.BAD_REQUEST;
+        }
+
+        RegistrationKeys registrationKeys = new RegistrationKeys();
+        String uniqueKey = UUID.randomUUID().toString();
+        registrationKeys.setRegKey(uniqueKey);
+        registrationKeys.setEmail(email);
+        registrationKeysRepository.save(registrationKeys);
+
+        String subject = "SkillHub Registration Key";
+        String text =
+                "Hello, dear user!\n" +
+                "Welcome to SkillHub, the platform for online learning." +
+                " Use your unique referral key to register:\n" + uniqueKey +
+                "\n\nStart your journey to new skills today!";
+        emailService.sendEmail(email, subject, text);
+
+        return HttpStatus.OK;
     }
 
     // Преобразование Users в UserDto
