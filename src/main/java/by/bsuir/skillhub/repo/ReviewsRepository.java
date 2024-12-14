@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface ReviewsRepository extends JpaRepository<Reviews, Long> {
     List<Reviews> findByCourse(Courses courses);
+    List<Reviews> findByUser(Users user);
     Optional<Reviews> findByCourseAndUser(Courses course, Users user);
     List<Reviews> findByRating(Integer rating);
     List<Reviews> findByRatingAndCourse(Integer rating, Courses course);
