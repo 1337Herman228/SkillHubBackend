@@ -63,6 +63,9 @@ public class ReviewsService {
             userDto.setDiamonds(user.getDiamonds());
             userDto.setRole(user.getRole());
             userDto.setPerson(user.getPerson());
+            userDto.setAvatarStroke(user.getAvatarStroke());
+            userDto.setNicknameColor(user.getNicknameColor());
+            userDto.setDignity(user.getDignity());
 
             reviewDto.setUser(userDto);
             reviewDtos.add(reviewDto);

@@ -29,6 +29,9 @@ public class UserService {
     private final BecomeTeacherRepository becomeTeacherRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final AvatarStrokesRepository avatarStrokesRepository;
+    private final DignitiesRepository dignitiesRepository;
+    private final NicknameColorsRepository nicknameColorsRepository;
 
     public ResponseEntity<UserDto> getUser(Long userId) throws Exception {
         try {
@@ -150,6 +153,11 @@ public class UserService {
         userDto.setRole(user.getRole());
         userDto.setLogin(user.getLogin());
         userDto.setDiamonds(user.getDiamonds());
+        userDto.setAvatarStroke(user.getAvatarStroke());
+        userDto.setDignity(user.getDignity());
+        userDto.setPurchasedDignities(user.getPurchasedDignities());
+        userDto.setNicknameColor(user.getNicknameColor());
+        userDto.setPurchasedNicknameColors(user.getPurchasedNicknameColors());
         return userDto;
     }
 
@@ -210,6 +218,148 @@ public class UserService {
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.BAD_REQUEST;
+        }
+    }
+
+    public List<AvatarStrokes> getPurchasedStrokesForUser(Long userId) {
+        Users user = usersRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getPurchasedStrokes();
+    }
+
+    public HttpStatus changeAvatarStroke(Long userId, Long avatarStrokeId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            AvatarStrokes avatarStrokes = avatarStrokesRepository.findById(avatarStrokeId).get();
+            user.setAvatarStroke(avatarStrokes);
+            usersRepository.save(user);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus removeAvatarStroke(Long userId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            user.setAvatarStroke(null);
+            usersRepository.save(user);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus changeDignity(Long userId, Long dignityId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            Dignities dignities = dignitiesRepository.findById(dignityId).get();
+            user.setDignity(dignities);
+            usersRepository.save(user);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus removeDignity(Long userId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            user.setDignity(null);
+            usersRepository.save(user);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus changeNicknameColor(Long userId, Long nicknameColorId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            NicknameColors nicknameColor = nicknameColorsRepository.findById(nicknameColorId).get();
+            user.setNicknameColor(nicknameColor);
+            usersRepository.save(user);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus removeNicknameColor(Long userId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            user.setNicknameColor(null);
+            usersRepository.save(user);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus buyAvatarStroke(Long userId, Long avatarStrokeId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            AvatarStrokes avatarStroke = avatarStrokesRepository.findById(avatarStrokeId).get();
+
+            List<AvatarStrokes> avatarStrokesList = user.getPurchasedStrokes();
+            avatarStrokesList.add(avatarStroke);
+            user.setDiamonds(user.getDiamonds() - avatarStroke.getPrice());
+
+            user.setPurchasedStrokes(avatarStrokesList);
+            usersRepository.save(user);
+
+            changeAvatarStroke(userId,avatarStrokeId);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus buyDignity(Long userId, Long dignityId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            Dignities dignity = dignitiesRepository.findById(dignityId).get();
+
+            List<Dignities> dignitiesList = user.getPurchasedDignities();
+            dignitiesList.add(dignity);
+            user.setDiamonds(user.getDiamonds() - dignity.getPrice());
+
+            user.setPurchasedDignities(dignitiesList);
+            usersRepository.save(user);
+
+            changeDignity(userId, dignityId);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+    }
+
+    public HttpStatus buyNicknameColor(Long userId, Long nicknameColorId) {
+        try{
+            Users user = usersRepository.findById(userId).get();
+            NicknameColors nicknameColor = nicknameColorsRepository.findById(nicknameColorId).get();
+
+            List<NicknameColors> nicknameColorsList = user.getPurchasedNicknameColors();
+            nicknameColorsList.add(nicknameColor);
+            user.setDiamonds(user.getDiamonds() - nicknameColor.getPrice());
+
+            user.setPurchasedNicknameColors(nicknameColorsList);
+            usersRepository.save(user);
+
+            changeNicknameColor(userId, nicknameColorId);
+
+            return HttpStatus.OK;
+        }catch (Exception e){
+            return HttpStatus.INTERNAL_SERVER_ERROR;
         }
     }
 

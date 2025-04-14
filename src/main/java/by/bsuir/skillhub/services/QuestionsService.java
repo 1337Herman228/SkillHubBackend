@@ -93,6 +93,9 @@ public class QuestionsService {
         userDto.setDiamonds(user.getDiamonds());
         userDto.setRole(user.getRole());
         userDto.setPerson(user.getPerson());
+        userDto.setAvatarStroke(user.getAvatarStroke());
+        userDto.setDignity(user.getDignity());
+        userDto.setNicknameColor(user.getNicknameColor());
         return userDto;
     }
 }
