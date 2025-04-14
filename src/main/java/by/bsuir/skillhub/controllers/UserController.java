@@ -1,11 +1,11 @@
 package by.bsuir.skillhub.controllers;
 
 import by.bsuir.skillhub.dto.*;
-import by.bsuir.skillhub.repo.CoursesRepository;
-import by.bsuir.skillhub.repo.LessonsRepository;
-import by.bsuir.skillhub.repo.UsersRepository;
+import by.bsuir.skillhub.entity.AvatarStrokes;
+import by.bsuir.skillhub.entity.Dignities;
+import by.bsuir.skillhub.entity.NicknameColors;
+import by.bsuir.skillhub.repo.*;
 import by.bsuir.skillhub.entity.UserProgress;
-import by.bsuir.skillhub.repo.UserProgressRepository;
 import by.bsuir.skillhub.services.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -32,6 +32,9 @@ public class UserController {
     private final UserProgressRepository userProgressRepository;
     private final CoursesRepository coursesRepository;
     private final LessonsRepository lessonsRepository;
+    private final AvatarStrokesRepository avatarStrokesRepository;
+    private final DignitiesRepository dignitiesRepository;
+    private final NicknameColorsRepository nicknameColorsRepository;
 
     //Находим пользователя по ID
     @GetMapping("/get-user/{userId}")
@@ -177,8 +180,7 @@ public class UserController {
     }
 
     @GetMapping("/get-review-by-course-and-user/{courseId}/{userId}")
-    public ReviewDto
-    getCourseReviews(@PathVariable Long courseId, @PathVariable Long userId) {
+    public ReviewDto getCourseReviews(@PathVariable Long courseId, @PathVariable Long userId) {
         return reviewsService.getReviewByCourseAndUser(coursesRepository.findById(courseId).get(), usersRepository.findById(userId).get());
     }
 
@@ -187,4 +189,68 @@ public class UserController {
         return reviewsService.saveReview(reviewDto);
     }
 
+    @GetMapping("/get-user-purchased-avatar-strokes/{userId}")
+    public List<AvatarStrokes> getUserPurchasedAvatarStrokes(@PathVariable Long userId) {
+        return userService.getPurchasedStrokesForUser(userId);
+    }
+
+    @PutMapping("/change-user-avatar-stroke")
+    public HttpStatus changeUserAvatarStroke(@RequestBody ChangeAvatarStrokeDto avatarStrokeDto) {
+        return userService.changeAvatarStroke(avatarStrokeDto.getUserId(), avatarStrokeDto.getAvatarStrokeId());
+    }
+
+    @PutMapping("/remove-user-avatar-stroke/{userId}")
+    public HttpStatus removeUserAvatarStroke(@PathVariable Long userId) {
+        return userService.removeAvatarStroke(userId);
+    }
+
+    @GetMapping("/get-avatar-strokes-catalog")
+    public List<AvatarStrokes> getAvatarStrokesCatalog() {
+        return avatarStrokesRepository.findAll();
+    }
+
+    @GetMapping("/get-dignities-catalog")
+    public List<Dignities> getDignitiesCatalog() {
+        return dignitiesRepository.findAll();
+    }
+
+    @GetMapping("/get-nickname-colors-catalog")
+    public List<NicknameColors> getNicknameColorsCatalog() {
+        return nicknameColorsRepository.findAll();
+    }
+
+    @PostMapping("/buy-avatar-stroke")
+    public HttpStatus buyAvatarStroke(@RequestBody ChangeAvatarStrokeDto avatarStrokeDto) {
+        return userService.buyAvatarStroke(avatarStrokeDto.getUserId(),avatarStrokeDto.getAvatarStrokeId());
+    }
+
+    @PostMapping("/buy-dignity")
+    public HttpStatus buyDignity(@RequestBody ChangeDignityDto changeDignityDto) {
+        return userService.buyDignity(changeDignityDto.getUserId(),changeDignityDto.getDignityId());
+    }
+
+    @PostMapping("/buy-nickname-color")
+    public HttpStatus buyNicknameColor(@RequestBody ChangeNicknameColorDto nicknameColorDto) {
+        return userService.buyNicknameColor(nicknameColorDto.getUserId(),nicknameColorDto.getNicknameColorId());
+    }
+
+    @PutMapping("/change-user-dignity")
+    public HttpStatus changeUserDignity(@RequestBody ChangeDignityDto dignityDto) {
+        return userService.changeDignity(dignityDto.getUserId(), dignityDto.getDignityId());
+    }
+
+    @PutMapping("/remove-user-dignity/{userId}")
+    public HttpStatus removeUserDignity(@PathVariable Long userId) {
+        return userService.removeDignity(userId);
+    }
+
+    @PutMapping("/change-user-nickname-color")
+    public HttpStatus changeUserNicknameColor(@RequestBody ChangeNicknameColorDto changeNicknameColorDto) {
+        return userService.changeNicknameColor(changeNicknameColorDto.getUserId(), changeNicknameColorDto.getNicknameColorId());
+    }
+
+    @PutMapping("/remove-user-nickname-color/{userId}")
+    public HttpStatus removeUserNicknameColor(@PathVariable Long userId) {
+        return userService.removeNicknameColor(userId);
+    }
 }

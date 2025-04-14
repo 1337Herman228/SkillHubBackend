@@ -10,11 +10,91 @@ VALUES (10000, 'Alice', 'Smith', 'alice.smith@example.com', 'avatar-10002t=17309
        (10001, 'Bob', 'Johnson', 'bob.johnson@example.com', null),
        (10002, 'Charlie', 'Williams', 'charlie.williams@example.com', 'avatar-10002t=1731497145372.png');
 
+-- Заполнение таблицы avatar_strokes (Рамки аватаров)
+INSERT INTO avatar_strokes (avatar_stroke_id, label, value, url, price)
+VALUES (10000, 'Smoking', 'smoking', 'smoking-stroke.png', 100),
+       (10001, 'Pink', 'pink', 'pink-stroke.png', 100),
+       (10003, 'Tree', 'tree', 'tree-stroke.png', 300),
+       (10004, 'Rainbow Clouds', 'rainbow-clouds', 'rainbow-clouds-stroke.png', 500);
+
+-- Заполнение таблицы dignities (Титулы)
+INSERT INTO dignities (dignity_id, dignity_name, price)
+VALUES (10000, 'Мастер Джедай', 75),
+       (10001, 'Профессионал', 100),
+       (10002, 'Робот', 40),
+       (10003, 'Гигант мысли', 70),
+       (10004, 'МегаМозг', 80),
+       (10005, 'Чоткий Пасан', 120),
+       (10006, 'Черный Мечник', 300),
+       (10007, 'Тертый Калач', 120),
+       (10008, 'Всезнающий', 60),
+       (10009, 'В активном поиске', 1),
+       (10010, 'Сыр Камамбер', 99),
+       (10011, 'Сок "Добрый"', 150),
+       (10012, 'Черный Маг', 100),
+       (10013, 'Мистер Президент', 333),
+       (10014, 'Валенок', 40),
+       (10015, 'Утюг', 77),
+       (10016, 'Киллер в отставке', 777),
+       (10017, 'Падаван', 40);
+
+-- Заполнение таблицы nickname_colors (Цвета ников)
+INSERT INTO nickname_colors (nickname_color_id, name, color, price)
+VALUES (10000, 'Голубой', '{"color":"#4abecd"}', 50),
+       (10001, 'Бронзовый', '{"color":"#eacb44"}', 50),
+       (10002, 'Оранжевый', '{"color":"#ef9d38"}', 50),
+       (10003, 'Розовый', '{"color":"#e82da2"} ', 50),
+       (10004, 'Фиолетовый', '{"color":"#992ae1"}', 50),
+       (10005, 'Зеленый', '{"color":"#26c044"}', 50),
+       (10006, 'Красный', '{"color":"#ef0606"}', 50),
+       (10007, 'Retro Wagon',
+        '{"background": "linear-gradient(90deg, #FDBB2D 0%, #22C1C3 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+       (10008, 'Fresco Crush',
+        '{"background": "linear-gradient(90deg, #FDBB2D 0%, #3A1C71 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+       (10009, 'Ooey Gooey',
+        '{"background": "linear-gradient(90deg, #0700b8 0%, #00ff88 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+       (100010, 'Disco Club',
+        '{"background": "linear-gradient(90deg, #FC466B 0%, #3F5EFB 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+       (100011, 'Aqua Spray',
+        '{"background": "linear-gradient(90deg, #00d2ff 0%, #3a47d5 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+       (100012, 'Bloody Mimosa',
+        '{"background": "linear-gradient(90deg, #d53369 0%, #daae51 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+    (100013, 'Shady Lane',
+        '{"background": "linear-gradient(90deg, #3F2B96 0%, #A8C0FF 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100),
+       (100014, 'Kale Salad',
+        '{"background": "#2A7B9B", "background": "linear-gradient(90deg,rgba(42, 123, 155, 1) 0%, rgba(87, 199, 133, 1) 50%, rgba(237, 221, 83, 1) 100%)", "WebkitBackgroundClip": "text", "color": "transparent"}',
+        100);
+
 -- Заполнение таблицы users
 INSERT INTO users (user_id, person_id, role_id, login, password, diamonds)
 VALUES (10000, 10000, 10000, 'admin', '$2a$10$8v.FICNBT6hBvi1TGFr7W.I1tgogJNryFduVFu/0JbL1P/HOtBop2', 0),
-       (10001, 10001, 10001, 'teacher', '$2a$10$74i63XHBZHbm5pw2JWDRvOQT2Tx2EMlnx5IgkDDUvC0PTgbUXjDZa', 50),
-       (10002, 10002, 10002, 'user', '$2a$10$mefnFn0olDvoI3HIo4TE2u4.qyGNl6yYjL1febttKp9bYQuEB8SXy', 10);
+       (10001, 10001, 10001, 'teacher', '$2a$10$74i63XHBZHbm5pw2JWDRvOQT2Tx2EMlnx5IgkDDUvC0PTgbUXjDZa', 50);
+INSERT INTO users (user_id, person_id, role_id, login, password, diamonds, avatar_stroke_id, dignity_id,
+                   nickname_color_id)
+VALUES (10002, 10002, 10002, 'user', '$2a$10$mefnFn0olDvoI3HIo4TE2u4.qyGNl6yYjL1febttKp9bYQuEB8SXy', 3300, 10003, 10000,
+        10000);
+
+-- Присваиваем (покупаем) пользователям рамки для аватарок
+INSERT INTO user_purchased_avatar_strokes (avatar_stroke_id, user_id)
+VALUES (10000, 10002),
+       (10001, 10002);
+
+-- Присваиваем (покупаем) пользователям титулы
+INSERT INTO user_purchased_dignities (dignity_id, user_id)
+VALUES (10000, 10002),
+       (10001, 10002);
+
+-- Присваиваем (покупаем) пользователям цвета ников
+INSERT INTO user_purchased_nickname_colors (nickname_color_id, user_id)
+VALUES (10000, 10002),
+       (10001, 10002);
 
 -- Заполнение таблицы registration_keys
 INSERT INTO registration_keys (email, reg_key)
