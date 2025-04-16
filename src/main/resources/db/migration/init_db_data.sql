@@ -84,6 +84,7 @@ VALUES (10002, 10002, 10002, 'user', '$2a$10$mefnFn0olDvoI3HIo4TE2u4.qyGNl6yYjL1
 -- Присваиваем (покупаем) пользователям рамки для аватарок
 INSERT INTO user_purchased_avatar_strokes (avatar_stroke_id, user_id)
 VALUES (10000, 10002),
+       (10003, 10002),
        (10001, 10002);
 
 -- Присваиваем (покупаем) пользователям титулы
