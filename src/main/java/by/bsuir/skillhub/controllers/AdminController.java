@@ -1,11 +1,10 @@
 package by.bsuir.skillhub.controllers;
 
-import by.bsuir.skillhub.dto.AddRegKeyDto;
-import by.bsuir.skillhub.dto.EditUserDto;
-import by.bsuir.skillhub.dto.UserDto;
+import by.bsuir.skillhub.dto.*;
 import by.bsuir.skillhub.entity.RegistrationKeys;
 import by.bsuir.skillhub.entity.Roles;
 import by.bsuir.skillhub.repo.RolesRepository;
+import by.bsuir.skillhub.services.CoursesService;
 import by.bsuir.skillhub.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +22,7 @@ public class AdminController {
 
     private final UserService userService;
     private final RolesRepository rolesRepository;
+    private final CoursesService coursesService;
 
     @GetMapping("/get-all-reg-keys")
     public List<RegistrationKeys> getAllRegistrationKeys() {
@@ -64,5 +64,13 @@ public class AdminController {
         return userService.deleteUser(id);
     }
 
+    @GetMapping("/get-all-courses")
+    public List<AllCoursesDto> getAllCourses() throws Exception {
+        return coursesService.getAllCourses();
+    }
 
+    @GetMapping("/find-admin-courses-by-name/{courseName}")
+    public List<AllCoursesDto> findAdminCoursesByName(@PathVariable String courseName) throws Exception {
+        return coursesService.findAdminCoursesByName(courseName);
+    }
 }

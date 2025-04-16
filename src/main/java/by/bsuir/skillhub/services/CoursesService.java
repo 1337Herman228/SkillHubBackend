@@ -220,15 +220,16 @@ public class CoursesService {
 
     public HttpStatus markLessonAsPassed(Long userId, Long courseId, Long lessonId) {
         try {
-
             Users user = usersRepository.findById(userId).get();
             Courses course = coursesRepository.findById(courseId).get();
             Lessons lesson = lessonsRepository.findById(lessonId).get();
+            user.setDiamonds(user.getDiamonds() + lesson.getDiamondReward());
             UserProgress userProgress = new UserProgress();
             userProgress.setUser(user);
             userProgress.setCourse(course);
             userProgress.setLesson(lesson);
             userProgressRepository.save(userProgress);
+            usersRepository.save(user);
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.BAD_REQUEST;
@@ -239,8 +240,12 @@ public class CoursesService {
         try {
             Users user = usersRepository.findById(userId).get();
             Lessons lesson = lessonsRepository.findById(lessonId).get();
-            UserProgress userProgress = userProgressRepository.findByUserAndLesson(user,lesson).get();
+            UserProgress userProgress = userProgressRepository.findByUserAndLesson(user, lesson).get();
             userProgressRepository.delete(userProgress);
+            int diamonds = user.getDiamonds() - lesson.getDiamondReward();
+            if(diamonds < 0) { diamonds = 0; }
+            user.setDiamonds(diamonds);
+            usersRepository.save(user);
             return HttpStatus.OK;
         } catch (Exception e) {
             return HttpStatus.BAD_REQUEST;
@@ -262,9 +267,22 @@ public class CoursesService {
         return makeAllCoursesDtoList(teacherCourses, user);
     }
 
+    public List<AllCoursesDto> getAllCourses() {
+        List<Courses> allCourses = coursesRepository.findAll();
+        return makeAllCoursesDtoListForAdmin(allCourses);
+    }
+
     public List<AllCoursesDto> findTeacherCoursesByName(Users user, String courseName) {
         List<Courses> teacherCourses = coursesRepository.findByAuthorAndCourseNameContainingIgnoreCase(user, courseName);
         return makeAllCoursesDtoList(teacherCourses, user);
+    }
+
+    public List<AllCoursesDto> findAdminCoursesByName(String courseName) {
+        List<Courses> teacherCourses = new ArrayList<>();
+        if (courseName.equals("all")) teacherCourses = coursesRepository.findAll();
+        else teacherCourses = coursesRepository.findByCourseNameContainingIgnoreCase(courseName);
+
+        return makeAllCoursesDtoListForAdmin(teacherCourses);
     }
 
     public List<AllCoursesDto> getAllCoursesForUser(Users user) {
@@ -305,6 +323,32 @@ public class CoursesService {
             } else {
                 allCoursesDto.setStatus("NO_REQUEST");
             }
+            allCourseDtos.add(allCoursesDto);
+
+        }
+        return allCourseDtos;
+    }
+
+    public List<AllCoursesDto> makeAllCoursesDtoListForAdmin(List<Courses> courses) {
+
+        List<AllCoursesDto> allCourseDtos = new ArrayList<>();
+        for (Courses course : courses) {
+
+            //Находим общую длительность уроков
+            List<Lessons> allCourseLessons = getAllCourseLessons(course);
+            int sumDuration = countLessonsDuration(allCourseLessons);
+
+            //Находим рейтинг курса
+            List<Reviews> courseReviews = reviewsRepository.findByCourse(course);
+            float rating = countAverageCourseRating(courseReviews);
+
+            AllCoursesDto allCoursesDto = new AllCoursesDto();
+            allCoursesDto.setCourse(course);
+            allCoursesDto.setDuration(sumDuration);
+            allCoursesDto.setAllLessonsCount(allCourseLessons.size());
+            allCoursesDto.setRating(rating);
+            allCoursesDto.setReviewsCount(courseReviews.size());
+
             allCourseDtos.add(allCoursesDto);
 
         }
@@ -900,25 +944,25 @@ public class CoursesService {
     }
 
     public HttpStatus changeCourseCertificate(Long courseId, String certificatePath) {
-        try{
+        try {
             Courses course = coursesRepository.findById(courseId).orElse(null);
             assert course != null;
             course.setCertificate(certificatePath);
             coursesRepository.save(course);
             return HttpStatus.OK;
-        }catch (Exception e){
+        } catch (Exception e) {
             return HttpStatus.BAD_REQUEST;
         }
     }
 
     public HttpStatus deleteCourseCertificate(Long courseId) {
-        try{
+        try {
             Courses course = coursesRepository.findById(courseId).orElse(null);
             assert course != null;
             course.setCertificate(null);
             coursesRepository.save(course);
             return HttpStatus.OK;
-        }catch (Exception e){
+        } catch (Exception e) {
             return HttpStatus.BAD_REQUEST;
         }
     }
